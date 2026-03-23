@@ -21,6 +21,7 @@ export default defineConfig({
         { label: 'JavaScript', autogenerate: { directory: 'javascript' } },
         { label: 'Terminal', autogenerate: { directory: 'terminal' } },
         { label: 'Sites Salvos', autogenerate: { directory: 'sites' } },
+        { label: 'Setup', autogenerate: { directory: 'setup' } },
       ],
     }),
   ],

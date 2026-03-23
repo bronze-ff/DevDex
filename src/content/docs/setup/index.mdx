@@ -1,0 +1,151 @@
+---
+title: Setup — Máquina Nova
+description: Skills, plugins e CLIs instalados toda vez que formato a máquina para usar com Claude Code.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Lista completa de ferramentas instaladas em toda máquina nova. Organizadas por categoria com os comandos de instalação prontos para copiar.
+
+---
+
+## Plugins & Skills — Claude Code
+
+Instalados direto no Claude Code via `/plugin`.
+
+### Superpowers
+**Framework de skills e metodologia de desenvolvimento agêntico.**
+
+O sistema base de skills que potencializa o Claude Code com workflows estruturados: planejamento, TDD, debugging, revisão de código, e muito mais.
+
+```bash
+/plugin install superpowers@claude-plugins-official
+```
+[github.com/obra/superpowers](https://github.com/obra/superpowers)
+
+---
+
+### UI UX Pro Max
+**Inteligência de design para interfaces profissionais.**
+
+Gera design systems completos com 161 paletas, 57 pares tipográficos, 67 estilos de UI e regras por tipo de produto. Suporte a 13 stacks.
+
+```bash
+/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill
+```
+[github.com/nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
+
+---
+
+### Interface Design
+**Design engineering para Claude Code — consistência visual enforçada.**
+
+Craft, memória e aplicação de padrões visuais para manter UI consistente entre sessões.
+
+```bash
+/plugin marketplace add Dammyjay93/interface-design
+```
+[github.com/Dammyjay93/interface-design](https://github.com/Dammyjay93/interface-design)
+
+---
+
+### Claude Mem
+**Memória persistente entre sessões para o Claude Code.**
+
+Captura contexto automaticamente, gera resumos semânticos e injeta conhecimento relevante em sessões futuras.
+
+```bash
+/plugin marketplace add thedotmack/claude-mem
+```
+[github.com/thedotmack/claude-mem](https://github.com/thedotmack/claude-mem)
+
+---
+
+### Napkin
+**Scratchpad persistente de erros e correções por repositório.**
+
+Mantém um arquivo `.claude/napkin.md` por repo onde o agente registra erros cometidos e aprende com eles entre sessões.
+
+```bash
+git clone https://github.com/blader/napkin.git ~/.claude/skills/napkin
+```
+[github.com/blader/napkin](https://github.com/blader/napkin)
+
+---
+
+### CC Status Line
+**Status line customizável para o Claude Code CLI.**
+
+Adiciona informações contextuais ao prompt do Claude Code com temas, widgets e suporte a Powerline.
+
+```bash
+npx -y ccstatusline@latest
+```
+
+<Aside type="tip">
+  Use `bunx -y ccstatusline@latest` se tiver o Bun instalado — mais rápido.
+</Aside>
+
+[github.com/sirmalloc/ccstatusline](https://github.com/sirmalloc/ccstatusline)
+
+---
+
+## CLIs de Automação
+
+Ferramentas instaladas globalmente para automação de browser e scraping.
+
+### Browser Use
+**Torna sites acessíveis para agentes de IA.**
+
+Biblioteca Python para automatizar tarefas no browser com agentes de IA. Suporta Claude, ChatGPT, Gemini e outros.
+
+```bash
+uv init && uv add browser-use && uv sync
+```
+[github.com/browser-use/browser-use](https://github.com/browser-use/browser-use)
+
+---
+
+### Playwright CLI
+**Record, inspeciona seletores e gera código de automação via terminal.**
+
+CLI oficial do Playwright, otimizada para agentes de código — baixo consumo de tokens no contexto do modelo.
+
+```bash
+npm install -g @playwright/cli@latest
+```
+[github.com/microsoft/playwright-cli](https://github.com/microsoft/playwright-cli)
+
+---
+
+### Firecrawl CLI
+**Scrape, crawl e extração de dados de qualquer site pelo terminal.**
+
+Acessa a API do Firecrawl diretamente via CLI. Setup rápido com um comando.
+
+```bash
+npm install -g firecrawl-cli
+
+# ou sem instalar globalmente:
+npx -y firecrawl-cli@latest init -y --browser
+```
+[github.com/firecrawl/cli](https://github.com/firecrawl/cli)
+
+---
+
+## Checklist de Instalação
+
+Ordem recomendada em uma máquina nova:
+
+- [ ] Instalar Node.js + npm
+- [ ] Instalar Python + `uv`
+- [ ] Instalar Claude Code (`npm install -g @anthropic-ai/claude-code`)
+- [ ] `/plugin install superpowers@claude-plugins-official`
+- [ ] `/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill`
+- [ ] `/plugin marketplace add Dammyjay93/interface-design`
+- [ ] `/plugin marketplace add thedotmack/claude-mem`
+- [ ] `git clone https://github.com/blader/napkin.git ~/.claude/skills/napkin`
+- [ ] `npx -y ccstatusline@latest`
+- [ ] `npm install -g @playwright/cli@latest`
+- [ ] `npm install -g firecrawl-cli`
+- [ ] `uv add browser-use`
