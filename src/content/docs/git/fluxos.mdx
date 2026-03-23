@@ -1,0 +1,27 @@
+---
+title: Fluxos de Trabalho
+description: Workflows comuns com Git para projetos solo e em equipe.
+---
+
+## Feature Branch Flow
+
+```bash
+git checkout -b feat/minha-feature   # cria branch
+# ... trabalha ...
+git add .
+git commit -m "feat: adiciona minha feature"
+git push -u origin feat/minha-feature
+# abre PR e faz merge
+git checkout main
+git pull
+git branch -d feat/minha-feature
+```
+
+## Desfazendo coisas
+
+```bash
+git restore <arquivo>        # descarta mudanças não staged
+git restore --staged <arq>   # remove do stage
+git revert <hash>            # reverte commit (seguro)
+git reset --hard HEAD~1      # desfaz último commit (destrutivo)
+```

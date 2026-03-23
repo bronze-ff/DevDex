@@ -1,0 +1,36 @@
+---
+title: Comandos Git
+description: Referência rápida dos comandos Git mais usados.
+---
+
+## Básico
+
+```bash
+git init                    # inicializa repositório
+git clone <url>             # clona repositório
+git status                  # estado atual
+git add <arquivo>           # adiciona ao stage
+git commit -m "mensagem"    # commita
+git push                    # envia para remote
+git pull                    # atualiza do remote
+```
+
+## Branches
+
+```bash
+git branch                  # lista branches
+git branch <nome>           # cria branch
+git checkout <branch>       # muda de branch
+git checkout -b <branch>    # cria e muda
+git merge <branch>          # merge
+git branch -d <branch>      # deleta branch
+```
+
+## Histórico e diff
+
+```bash
+git log --oneline           # histórico resumido
+git diff                    # mudanças não staged
+git diff --staged           # mudanças staged
+git show <hash>             # detalhes de um commit
+```
