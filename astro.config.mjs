@@ -10,6 +10,9 @@ export default defineConfig({
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/seu-usuario/devdex' },
       ],
+      components: {
+        PageTitle: './src/components/PageTitle.astro',
+      },
       sidebar: [
         { label: 'Claude Code', autogenerate: { directory: 'claude-code' } },
         { label: 'Git', autogenerate: { directory: 'git' } },
