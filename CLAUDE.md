@@ -38,9 +38,9 @@ Sempre criar branch a partir de `main`. Nunca commitar direto em `main`.
 Convenção de nomes:
 
 ```
-feat/FIL-X-descricao-curta     # nova funcionalidade
-fix/FIL-X-descricao-curta      # correção de bug
-refactor/FIL-X-descricao       # refatoração
+feat/ISSUE-X-descricao-curta     # nova funcionalidade
+fix/ISSUE-X-descricao-curta      # correção de bug
+refactor/ISSUE-X-descricao       # refatoração
 test/descricao                 # testes pontuais sem issue
 chore/descricao                # manutenção, deps, config
 ```
@@ -49,7 +49,7 @@ Para criar uma branch nova, sempre partir explicitamente de `main` atualizado:
 
 ```bash
 git checkout main && git pull
-git checkout -b feat/FIL-X-descricao
+git checkout -b feat/ISSUE-X-descricao
 ```
 
 ### Worktrees
@@ -58,9 +58,9 @@ Para trabalhar em funcionalidades paralelas sem interromper o trabalho atual:
 
 ```bash
 git checkout main && git pull
-git worktree add -b feat/FIL-X-descricao ../App-9822-FIL-X main
+git worktree add -b feat/ISSUE-X-descricao ../App-9822-ISSUE-X main
 # trabalhar no diretório separado
-git worktree remove ../App-9822-FIL-X  # ao finalizar
+git worktree remove ../App-9822-ISSUE-X  # ao finalizar
 ```
 
 ### Commits
@@ -70,14 +70,14 @@ Seguir Conventional Commits. Sempre referenciar a issue do Linear no footer:
 ```
 feat: adicionar filtro por status nas despesas
 
-Closes FIL-X
+Closes ISSUE-X
 ```
 
 Tipos: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
 ### Pull Requests (via gh CLI)
 
-Criar PRs com `gh pr create`. O corpo sempre deve conter `Closes FIL-X` para fechar a issue no Linear ao fazer merge:
+Criar PRs com `gh pr create`. O corpo sempre deve conter `Closes ISSUE-X` para fechar a issue no Linear ao fazer merge:
 
 ```bash
 gh pr create --title "feat: descrição" --body "$(cat <<'EOF'
@@ -89,7 +89,7 @@ gh pr create --title "feat: descrição" --body "$(cat <<'EOF'
 1. passo 1
 2. passo 2
 
-Closes FIL-X
+Closes ISSUE-X
 EOF
 )"
 ```
@@ -120,7 +120,7 @@ gh pr merge --squash --delete-branch   # mergear com histórico limpo
 ### Integração Linear ↔ GitHub
 
 - Issues são gerenciadas no Linear (planejamento, prioridade, sprint)
-- PRs no GitHub referenciam as issues via `Closes FIL-X`
+- PRs no GitHub referenciam as issues via `Closes ISSUE-X`
 - Ao fazer merge do PR, o Linear fecha a issue automaticamente
 
 ---
