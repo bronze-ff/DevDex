@@ -1,50 +1,19 @@
 ---
-title: Setup de Novo Projeto
-description: Instrução completa para criar CLAUDE.md e WORKFLOW.md em qualquer novo projeto. Copie, cole e ajuste para o projeto atual.
+title: Prompt — Setup de Novo Projeto
+description: Copie e cole este prompt no Claude Code para criar automaticamente CLAUDE.md, WORKFLOW.md e .claude/settings.json em qualquer novo projeto.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-Esses dois arquivos vão na raiz de todo projeto novo. Copie os templates abaixo, cole no projeto e **ajuste cada seção marcada com `← ADAPTAR`** para refletir o projeto atual.
-
-<Aside type="tip">
-  Leia o arquivo inteiro antes de editar. Entender o propósito de cada seção ajuda a fazer ajustes mais precisos.
-</Aside>
+Cole o bloco abaixo no Claude Code dentro do novo projeto. Ele vai criar os três arquivos de configuração e guiar você pelas adaptações necessárias.
 
 ---
 
-## O que é cada arquivo
-
-| Arquivo | Para quem | Propósito |
-|---|---|---|
-| `CLAUDE.md` | Claude Code | Lido automaticamente em cada sessão — define comportamento, regras e contexto |
-| `WORKFLOW.md` | Desenvolvedores | Referência operacional do dia a dia — branches, commits, PRs, fluxo de feature |
-
-**Regra de ouro para o `CLAUDE.md`: menos de 200 linhas.** Acima disso, a aderência às instruções cai e o contexto fica caro.
+`````text
+Crie os seguintes arquivos na raiz deste projeto. Após criar todos, liste as seções marcadas com ← ADAPTAR e ajuste uma por uma conforme minhas respostas.
 
 ---
 
-## O que escrever no CLAUDE.md
+ARQUIVO: CLAUDE.md
 
-**Escreva:**
-- Comandos do projeto (`dev`, `build`, `test`, `lint`)
-- Stack e estrutura de pastas não-óbvia
-- Convenções que o Claude erraria sem aviso (nome de módulos, padrão de retorno de APIs, etc.)
-- Regras de "nunca faça" específicas do projeto
-- Git workflow resumido
-
-**Não escreva:**
-- Coisas que já estão no `.eslintrc`, `prettier.config`, etc.
-- Teoria ou documentação longa — isso é para o README
-- Regras genéricas que qualquer dev já sabe
-
----
-
-## Template: CLAUDE.md
-
-Salvar como `CLAUDE.md` na raiz do projeto:
-
-````md
 # [NOME DO PROJETO] ← ADAPTAR
 
 [Uma linha descrevendo o que é o projeto] ← ADAPTAR
@@ -89,9 +58,9 @@ Antes de qualquer trabalho, verificar se o local está atualizado:
 
 ### Branches
 
-Sempre criar branch a partir de `main`. Nunca commitar direto em `main`.
+Sempre criar branch a partir de main. Nunca commitar direto em main.
 
-    feat/ISSUE-X-descricao-curta   ← ADAPTAR prefixo da issue (FIL-, APP-, etc.)
+    feat/ISSUE-X-descricao-curta   ← ADAPTAR prefixo da issue
     fix/ISSUE-X-descricao-curta
     refactor/ISSUE-X-descricao
     test/descricao
@@ -106,9 +75,7 @@ Sempre criar branch a partir de `main`. Nunca commitar direto em `main`.
     git worktree add -b feat/ISSUE-X-descricao ../PROJETO-ISSUE-X main
     git worktree remove ../PROJETO-ISSUE-X  # ao finalizar
 
-### Commits
-
-Conventional Commits com referência à issue no footer:
+### Commits — Conventional Commits com referência à issue no footer
 
     feat: descrição da mudança
 
@@ -135,13 +102,13 @@ Tipos: feat, fix, refactor, docs, test, chore
 
 ### Política de Merge ← ADAPTAR
 
-**Requer revisão antes do merge:**
+Requer revisão antes do merge:
 - Alterações no banco de dados
 - Regras de negócio críticas
 - Autenticação e permissões
 - Integrações externas
 
-**Merge direto permitido:**
+Merge direto permitido:
 - Correções visuais de UI
 - Textos e labels
 - Refatorações sem mudança de comportamento
@@ -150,31 +117,27 @@ Tipos: feat, fix, refactor, docs, test, chore
 ### Integração com issue tracker ← ADAPTAR ou remover
 
 - Issues gerenciadas no [Linear / Jira / GitHub Issues]
-- `Closes ISSUE-X` no corpo do PR fecha a issue automaticamente no merge
+- Closes ISSUE-X no corpo do PR fecha a issue automaticamente no merge
 
 ---
 
 ## O que NUNCA fazer ← ADAPTAR
 
-**Git:**
-- Nunca commitar direto em `main` — sempre branch + PR
+Git:
+- Nunca commitar direto em main — sempre branch + PR
 
-**UI/Design:** ← preencha ou remova se não for projeto frontend
+UI/Design: ← preencha ou remova se não for projeto frontend
 - [Ex: nunca glassmorphism — sistema é flat com bordas sólidas]
 - [Ex: nunca fonte X — o projeto usa Y + Z]
 
-**Banco de dados:** ← preencha ou remova conforme o banco
+Banco de dados: ← preencha ou remova conforme o banco
 - [Ex: nunca concatenação de strings em queries — sempre bind variables]
 - [Ex: sempre fechar conexão no finally]
-````
 
 ---
 
-## Template: WORKFLOW.md
+ARQUIVO: WORKFLOW.md
 
-Salvar como `WORKFLOW.md` na raiz do projeto:
-
-````md
 # Workflow: [Issue Tracker] + GitHub + gh CLI ← ADAPTAR
 
 Guia operacional para gerenciamento de projetos.
@@ -183,18 +146,16 @@ Guia operacional para gerenciamento de projetos.
 
 ## Instalação do gh CLI
 
-    # Ubuntu/Debian
     sudo apt update && sudo apt install gh
     gh auth login
-    # → GitHub.com → SSH → Upload SSH key → Browser
 
 ---
 
-## Integração [Issue Tracker] ↔ GitHub ← ADAPTAR ou remover
+## Integração [Issue Tracker] com GitHub ← ADAPTAR ou remover
 
-1. No [Linear/Jira]: Settings → Integrations → GitHub → Connect
+1. Settings → Integrations → GitHub → Connect
 2. Autorizar o repositório
-3. `Closes ISSUE-X` no corpo de um PR fecha a issue automaticamente no merge
+3. Closes ISSUE-X no corpo de um PR fecha a issue automaticamente no merge
 
 ---
 
@@ -209,7 +170,7 @@ Antes de qualquer trabalho:
 
 ## Convenção de Branches
 
-Sempre criar a partir de `main`. Nunca commitar direto em `main`.
+Sempre criar a partir de main. Nunca commitar direto em main.
 
     feat/ISSUE-X-descricao-curta   ← ADAPTAR prefixo
     fix/ISSUE-X-descricao-curta
@@ -224,7 +185,6 @@ Sempre criar a partir de `main`. Nunca commitar direto em `main`.
     git checkout main && git pull
     git worktree add -b feat/ISSUE-X-descricao ../PROJETO-ISSUE-X main
     cd ../PROJETO-ISSUE-X
-    # trabalhar...
     git worktree remove ../PROJETO-ISSUE-X
 
 ---
@@ -267,7 +227,7 @@ Tipos: feat, fix, refactor, docs, test, chore
     2. git checkout main && git pull
     3. git checkout -b feat/ISSUE-X-descricao
     4. Implementar
-    5. git commit -m "feat: ... \n\nCloses ISSUE-X"
+    5. git commit -m "feat: ...\n\nCloses ISSUE-X"
     6. gh pr create (com Closes ISSUE-X no corpo)
     7. [revisão conforme política de merge]
     8. gh pr merge --squash --delete-branch
@@ -278,42 +238,47 @@ Tipos: feat, fix, refactor, docs, test, chore
 
 ## Política de Merge ← ADAPTAR
 
-**Requer revisão antes do merge:**
+Requer revisão:
 - [liste os casos críticos do projeto]
 
-**Merge direto permitido:**
+Merge direto:
 - [liste os casos simples do projeto]
 
 ---
 
-## Configurar em um Novo Projeto
+ARQUIVO: .claude/settings.json
 
-1. Copiar este arquivo para `WORKFLOW.md` na raiz
-2. Instalar `gh` se necessário
-3. Rodar `gh auth login`
-4. Conectar o issue tracker ao repositório
-5. Adicionar seção `## Git Workflow` no `CLAUDE.md`
-````
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git fetch *)",
+      "Bash(gh pr *)",
+      "Read",
+      "Write",
+      "Edit"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}
 
 ---
 
-## Checklist de setup
-
-Ao iniciar um projeto novo:
-
-- [ ] Criar `CLAUDE.md` na raiz (template acima, adaptado)
-- [ ] Criar `WORKFLOW.md` na raiz (template acima, adaptado)
-- [ ] Criar `.claude/settings.json` com permissões do projeto
-- [ ] Commitar os dois arquivos: `chore: adiciona CLAUDE.md e WORKFLOW.md`
-- [ ] Confirmar que todas as seções `← ADAPTAR` foram preenchidas
-
-<Aside type="caution">
-  Nunca copie regras de outro projeto sem adaptar — especialmente a seção "O que NUNCA fazer". Regras erradas confundem mais do que ajudam.
-</Aside>
+Após criar os três arquivos, liste todas as seções marcadas com ← ADAPTAR, pergunte sobre cada uma em sequência e edite os arquivos conforme as respostas.
+`````
 
 ---
 
-## Veja também
+## Referências
 
-- [A Pasta .claude — Guia Completo](/claude-code/pasta-claude/) — entenda o sistema por trás de cada arquivo
-- [Prompt — Setup de Novo Projeto](/claude-code/prompt-novo-projeto/) — versão para colar no Claude Code e criar os arquivos automaticamente
+- [A Pasta .claude — Guia Completo](/claude-code/pasta-claude/) — entenda o sistema por trás de cada arquivo criado
+- [Setup de Novo Projeto — Templates](/claude-code/setup-novo-projeto/) — versão para leitura e adaptação manual
