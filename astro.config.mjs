@@ -20,6 +20,7 @@ export default defineConfig({
         { label: 'Docker', autogenerate: { directory: 'docker' } },
         { label: 'JavaScript', autogenerate: { directory: 'javascript' } },
         { label: 'Terminal', autogenerate: { directory: 'terminal' } },
+        { label: 'Sites Salvos', autogenerate: { directory: 'sites' } },
       ],
     }),
   ],
