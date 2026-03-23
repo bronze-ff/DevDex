@@ -90,6 +90,102 @@ npx -y ccstatusline@latest
 
 ---
 
+## Workflow de Auditoria de Codebase (4 skills sequenciais)
+
+Skills criadas por [Glaucia Lemos](https://gist.github.com/glaucia86) para auditar, implementar e validar mudanças em codebases existentes. Usadas **em ordem**, como fases de um processo.
+
+<Aside type="note">
+  Essas skills são instaladas manualmente como arquivos em `~/.claude/skills/`. Salve cada gist como um arquivo `.md` na pasta correspondente.
+</Aside>
+
+```bash
+mkdir -p ~/.claude/skills/codebase-audit-workflow
+curl -L https://gist.githubusercontent.com/glaucia86/c16186da46d8701100a0eadca64e9f24/raw -o ~/.claude/skills/codebase-audit-workflow/01-codebase-review-question-audit.md
+curl -L https://gist.githubusercontent.com/glaucia86/36884908bc73b974f3741134a7130f01/raw -o ~/.claude/skills/codebase-audit-workflow/02-questions-md-resolution-implementation.md
+curl -L https://gist.githubusercontent.com/glaucia86/726c22ae88ad3eb9387c3fc396b75228/raw -o ~/.claude/skills/codebase-audit-workflow/03-implementation-verification-pass.md
+curl -L https://gist.githubusercontent.com/glaucia86/aca2d4d2596378bbf654ca0979d8c095/raw -o ~/.claude/skills/codebase-audit-workflow/04-release-readiness-pass.md
+```
+
+### Fase 1 — Codebase Review Question Audit
+**Audita a codebase e gera perguntas antes de qualquer mudança.**
+
+Lê o projeto inteiro sistematicamente — estrutura, arquitetura, dependências, rotas, lógica de negócio, segurança, testes — e produz um `QUESTIONS.md` com ambiguidades, riscos e decisões em aberto.
+
+Você responde o `QUESTIONS.md` antes de avançar para a Fase 2.
+
+[gist: codebase-review-question-audit](https://gist.github.com/glaucia86/c16186da46d8701100a0eadca64e9f24)
+
+---
+
+### Fase 2 — Questions Resolution + Implementation
+**Converte as respostas em plano de implementação e executa.**
+
+Lê o `QUESTIONS.md` respondido, classifica cada decisão (bug confirmado, comportamento intencional, melhoria aprovada), gera `IMPLEMENTATION_NOTES.md` e aplica as mudanças respeitando o escopo definido. Não redesenha partes não relacionadas.
+
+[gist: questions-md-resolution-implementation](https://gist.github.com/glaucia86/36884908bc73b974f3741134a7130f01)
+
+---
+
+### Fase 3 — Implementation Verification Pass
+**Verifica se a implementação honrou as decisões tomadas.**
+
+Audita o código produzido na Fase 2 em cinco dimensões: alinhamento com as decisões aprovadas, correção técnica, disciplina de escopo, risco de regressão e higiene do projeto (testes, documentação). Gera `VERIFICATION.md`.
+
+[gist: implementation-verification-pass](https://gist.github.com/glaucia86/726c22ae88ad3eb9387c3fc396b75228)
+
+---
+
+### Fase 4 — Release Readiness Pass
+**Avalia se o projeto está pronto para merge ou produção.**
+
+Usa os três arquivos anteriores como entrada e avalia: build, configuração, testes, deployment, observabilidade, documentação e riscos de produto. Gera `RELEASE_READINESS.md` com veredicto explícito: **Ready** / **Ready with caveats** / **Not ready**.
+
+[gist: release-readiness-pass](https://gist.github.com/glaucia86/aca2d4d2596378bbf654ca0979d8c095)
+
+---
+
+## Superpowers vs. Audit Workflow — quando usar cada um
+
+Ambos trabalham com o Claude Code mas têm propósitos diferentes. Não competem — se complementam.
+
+| | Superpowers | Audit Workflow (4 gists) |
+|---|---|---|
+| **Foco** | Construir coisas novas | Auditar e refatorar código existente |
+| **Ponto de partida** | Ideia / requisito | Codebase existente desconhecida |
+| **Ativação** | Automática por contexto | Manual — você invoca cada fase na ordem |
+| **Checkpoint humano** | Review entre tasks (opcional) | Obrigatório entre Fase 1 e 2 (você responde as perguntas) |
+| **Artefatos gerados** | Código + commits | 4 arquivos `.md` de documentação + código |
+| **Rigidez** | Flexível e composável | Sequência linear rígida de 4 fases |
+| **Filosofia** | TDD, iteração rápida, verificação | Entender primeiro, agir depois |
+| **Melhor para** | Feature nova, bug fix, projeto do zero | Entry em codebase herdada, pré-release, refatoração grande |
+
+### Use Superpowers quando:
+- Está construindo uma feature nova do zero
+- Está corrigindo um bug num projeto que você conhece
+- Quer TDD, subagentes, planejamento estruturado no dia a dia
+- Precisa de velocidade com qualidade
+
+### Use o Audit Workflow quando:
+- Entra num projeto que não conhece bem
+- Vai fazer uma refatoração grande em código legado
+- Precisa de uma trilha de documentação das decisões (auditoria, compliance)
+- Quer garantia antes de uma entrega importante para produção
+- O risco de estragar algo existente é alto
+
+### Usando os dois juntos:
+O fluxo ideal para entrar em um projeto desconhecido com mudanças grandes:
+
+```
+Audit Workflow Fase 1  → entende o projeto, levanta dúvidas
+Você responde           → define o escopo com clareza
+Audit Workflow Fase 2  → implementa dentro do escopo definido
+Superpowers (TDD)      → para os detalhes da implementação
+Audit Workflow Fase 3  → verifica o que foi feito
+Audit Workflow Fase 4  → decide se está pronto para merge
+```
+
+---
+
 ## CLIs de Automação
 
 Ferramentas instaladas globalmente para automação de browser e scraping.
