@@ -1,0 +1,312 @@
+---
+title: Setup de Novo Projeto
+description: Instrução completa para criar CLAUDE.md e WORKFLOW.md em qualquer novo projeto. Copie, cole e ajuste para o projeto atual.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Esses dois arquivos vão na raiz de todo projeto novo. Copie os templates abaixo, cole no projeto e **ajuste cada seção marcada com `← ADAPTAR`** para refletir o projeto atual.
+
+<Aside type="tip">
+  Leia o arquivo inteiro antes de editar. Entender o propósito de cada seção ajuda a fazer ajustes mais precisos.
+</Aside>
+
+---
+
+## O que é cada arquivo
+
+| Arquivo | Para quem | Propósito |
+|---|---|---|
+| `CLAUDE.md` | Claude Code | Lido automaticamente em cada sessão — define comportamento, regras e contexto |
+| `WORKFLOW.md` | Desenvolvedores | Referência operacional do dia a dia — branches, commits, PRs, fluxo de feature |
+
+**Regra de ouro para o `CLAUDE.md`: menos de 200 linhas.** Acima disso, a aderência às instruções cai e o contexto fica caro.
+
+---
+
+## O que escrever no CLAUDE.md
+
+**Escreva:**
+- Comandos do projeto (`dev`, `build`, `test`, `lint`)
+- Stack e estrutura de pastas não-óbvia
+- Convenções que o Claude erraria sem aviso (nome de módulos, padrão de retorno de APIs, etc.)
+- Regras de "nunca faça" específicas do projeto
+- Git workflow resumido
+
+**Não escreva:**
+- Coisas que já estão no `.eslintrc`, `prettier.config`, etc.
+- Teoria ou documentação longa — isso é para o README
+- Regras genéricas que qualquer dev já sabe
+
+---
+
+## Template: CLAUDE.md
+
+Salvar como `CLAUDE.md` na raiz do projeto:
+
+````md
+# [NOME DO PROJETO] ← ADAPTAR
+
+[Uma linha descrevendo o que é o projeto] ← ADAPTAR
+
+## Comandos
+
+    npm run dev      # servidor local ← ADAPTAR conforme o stack
+    npm run build    # build de produção
+    npm run test     # roda os testes
+    npm run lint     # verificação de código
+
+## Stack e Arquitetura ← ADAPTAR
+
+- [Framework principal + versão] (ex: Next.js 14, Express 5)
+- [Banco de dados + ORM] (ex: PostgreSQL via Prisma)
+- [Onde ficam os módulos principais] (ex: lógica em src/services/, rotas em src/routes/)
+- [Padrão de tipos/contratos] (ex: tipos compartilhados em src/types/)
+
+## Convenções ← ADAPTAR
+
+- [Ex: shape de resposta da API é sempre { data, error }]
+- [Ex: use o módulo logger em src/lib/logger.ts, não console.log]
+- [Ex: validação de request com zod em todo endpoint]
+- [Ex: nunca exponha stack traces para o cliente]
+
+## Atenção ← ADAPTAR — armadilhas não-óbvias do projeto
+
+- [Ex: testes usam banco real — rode npm run db:reset antes]
+- [Ex: TypeScript strict mode ativo — zero imports não usados]
+- [Ex: variáveis de ambiente necessárias estão no .env.example]
+
+---
+
+## Git Workflow
+
+### Sincronização com o remoto
+
+Antes de qualquer trabalho, verificar se o local está atualizado:
+
+    git fetch origin
+    git status
+
+### Branches
+
+Sempre criar branch a partir de `main`. Nunca commitar direto em `main`.
+
+    feat/ISSUE-X-descricao-curta   ← ADAPTAR prefixo da issue (FIL-, APP-, etc.)
+    fix/ISSUE-X-descricao-curta
+    refactor/ISSUE-X-descricao
+    test/descricao
+    chore/descricao
+
+    git checkout main && git pull
+    git checkout -b feat/ISSUE-X-descricao
+
+### Worktrees (trabalho paralelo)
+
+    git checkout main && git pull
+    git worktree add -b feat/ISSUE-X-descricao ../PROJETO-ISSUE-X main
+    git worktree remove ../PROJETO-ISSUE-X  # ao finalizar
+
+### Commits
+
+Conventional Commits com referência à issue no footer:
+
+    feat: descrição da mudança
+
+    Closes ISSUE-X  ← ADAPTAR prefixo
+
+Tipos: feat, fix, refactor, docs, test, chore
+
+### Pull Requests
+
+    gh pr create --title "feat: descrição" --body "$(cat <<'EOF'
+    ## O que foi feito
+    - item 1
+
+    ## Como testar
+    1. passo 1
+
+    Closes ISSUE-X
+    EOF
+    )"
+
+    gh pr status
+    gh pr checks
+    gh pr merge --squash --delete-branch
+
+### Política de Merge ← ADAPTAR
+
+**Requer revisão antes do merge:**
+- Alterações no banco de dados
+- Regras de negócio críticas
+- Autenticação e permissões
+- Integrações externas
+
+**Merge direto permitido:**
+- Correções visuais de UI
+- Textos e labels
+- Refatorações sem mudança de comportamento
+- Documentação
+
+### Integração com issue tracker ← ADAPTAR ou remover
+
+- Issues gerenciadas no [Linear / Jira / GitHub Issues]
+- `Closes ISSUE-X` no corpo do PR fecha a issue automaticamente no merge
+
+---
+
+## O que NUNCA fazer ← ADAPTAR
+
+**Git:**
+- Nunca commitar direto em `main` — sempre branch + PR
+
+**UI/Design:** ← preencha ou remova se não for projeto frontend
+- [Ex: nunca glassmorphism — sistema é flat com bordas sólidas]
+- [Ex: nunca fonte X — o projeto usa Y + Z]
+
+**Banco de dados:** ← preencha ou remova conforme o banco
+- [Ex: nunca concatenação de strings em queries — sempre bind variables]
+- [Ex: sempre fechar conexão no finally]
+````
+
+---
+
+## Template: WORKFLOW.md
+
+Salvar como `WORKFLOW.md` na raiz do projeto:
+
+````md
+# Workflow: [Issue Tracker] + GitHub + gh CLI ← ADAPTAR
+
+Guia operacional para gerenciamento de projetos.
+
+---
+
+## Instalação do gh CLI
+
+    # Ubuntu/Debian
+    sudo apt update && sudo apt install gh
+    gh auth login
+    # → GitHub.com → SSH → Upload SSH key → Browser
+
+---
+
+## Integração [Issue Tracker] ↔ GitHub ← ADAPTAR ou remover
+
+1. No [Linear/Jira]: Settings → Integrations → GitHub → Connect
+2. Autorizar o repositório
+3. `Closes ISSUE-X` no corpo de um PR fecha a issue automaticamente no merge
+
+---
+
+## Sincronização com o remoto
+
+Antes de qualquer trabalho:
+
+    git fetch origin
+    git status
+
+---
+
+## Convenção de Branches
+
+Sempre criar a partir de `main`. Nunca commitar direto em `main`.
+
+    feat/ISSUE-X-descricao-curta   ← ADAPTAR prefixo
+    fix/ISSUE-X-descricao-curta
+    refactor/ISSUE-X-descricao
+    test/descricao
+    chore/descricao
+
+---
+
+## Worktrees
+
+    git checkout main && git pull
+    git worktree add -b feat/ISSUE-X-descricao ../PROJETO-ISSUE-X main
+    cd ../PROJETO-ISSUE-X
+    # trabalhar...
+    git worktree remove ../PROJETO-ISSUE-X
+
+---
+
+## Commits
+
+    git commit -m "feat: descrição da mudança
+
+    Closes ISSUE-X"
+
+Tipos: feat, fix, refactor, docs, test, chore
+
+---
+
+## Pull Requests
+
+    gh pr create --title "feat: descrição" --body "$(cat <<'EOF'
+    ## O que foi feito
+    - item 1
+    - item 2
+
+    ## Como testar
+    1. passo 1
+    2. passo 2
+
+    Closes ISSUE-X
+    EOF
+    )"
+
+    gh pr status                          # PRs abertos
+    gh pr checks                          # status de CI
+    gh pr view                            # detalhes do PR atual
+    gh pr merge --squash --delete-branch  # mergear com histórico limpo
+
+---
+
+## Fluxo Completo de uma Feature
+
+    1. Criar issue no [Linear/Jira/GitHub] → ISSUE-X
+    2. git checkout main && git pull
+    3. git checkout -b feat/ISSUE-X-descricao
+    4. Implementar
+    5. git commit -m "feat: ... \n\nCloses ISSUE-X"
+    6. gh pr create (com Closes ISSUE-X no corpo)
+    7. [revisão conforme política de merge]
+    8. gh pr merge --squash --delete-branch
+    9. git checkout main && git pull
+    10. Issue fechada automaticamente
+
+---
+
+## Política de Merge ← ADAPTAR
+
+**Requer revisão antes do merge:**
+- [liste os casos críticos do projeto]
+
+**Merge direto permitido:**
+- [liste os casos simples do projeto]
+
+---
+
+## Configurar em um Novo Projeto
+
+1. Copiar este arquivo para `WORKFLOW.md` na raiz
+2. Instalar `gh` se necessário
+3. Rodar `gh auth login`
+4. Conectar o issue tracker ao repositório
+5. Adicionar seção `## Git Workflow` no `CLAUDE.md`
+````
+
+---
+
+## Checklist de setup
+
+Ao iniciar um projeto novo:
+
+- [ ] Criar `CLAUDE.md` na raiz (template acima, adaptado)
+- [ ] Criar `WORKFLOW.md` na raiz (template acima, adaptado)
+- [ ] Criar `.claude/settings.json` com permissões do projeto
+- [ ] Commitar os dois arquivos: `chore: adiciona CLAUDE.md e WORKFLOW.md`
+- [ ] Confirmar que todas as seções `← ADAPTAR` foram preenchidas
+
+<Aside type="caution">
+  Nunca copie regras de outro projeto sem adaptar — especialmente a seção "O que NUNCA fazer". Regras erradas confundem mais do que ajudam.
+</Aside>
