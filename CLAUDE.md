@@ -75,15 +75,6 @@ Closes FIL-X
 
 Tipos: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
-### Push
-
-Este repo tem dois remotes. Sempre fazer push nos dois ao enviar mudanças:
-
-```bash
-git push origin main
-git push multicanal main
-```
-
 ### Pull Requests (via gh CLI)
 
 Criar PRs com `gh pr create`. O corpo sempre deve conter `Closes FIL-X` para fechar a issue no Linear ao fazer merge:
@@ -148,7 +139,3 @@ gh pr merge --squash --delete-branch   # mergear com histórico limpo
 - Nunca `bg-gradient-to-br from-X-900 via-X-800` em logins — login usa navy via inline style com gradiente linear suave
 - Nunca emojis em selects/options — usar texto limpo (ex: "Confirmar", não "✅ Confirmar")
 
-**Banco de dados (Oracle):**
-- Nunca `connection.execute()` sem `release()` no `finally` — leak de conexão mata o pool Oracle
-- Nunca `autoCommit: true` em operações com mais de um INSERT/UPDATE — usar transação manual com commit/rollback explícito
-- Nunca concatenação de strings em queries SQL — sempre bind variables (`:param` syntax)
