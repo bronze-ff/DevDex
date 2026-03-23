@@ -1,0 +1,26 @@
+---
+title: MCP — Model Context Protocol
+description: Como usar o MCP no Claude Code para integrar ferramentas externas.
+---
+
+## O que é MCP?
+
+Model Context Protocol é um protocolo aberto que permite ao Claude Code se conectar a ferramentas e fontes de dados externas.
+
+## Configurar um servidor MCP
+
+```bash
+# Adicionar servidor MCP ao Claude Code
+claude mcp add <nome> <comando>
+
+# Listar servidores configurados
+claude mcp list
+```
+
+## Servidores úteis
+
+| Servidor | Funcionalidade |
+|---|---|
+| `@modelcontextprotocol/server-filesystem` | Acesso ao sistema de arquivos |
+| `@modelcontextprotocol/server-github` | API do GitHub |
+| `@modelcontextprotocol/server-postgres` | Banco de dados PostgreSQL |
