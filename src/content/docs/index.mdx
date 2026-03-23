@@ -1,40 +1,29 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: DevDex
+description: Base pessoal de conhecimento técnico para desenvolvedores.
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  title: DevDex
+  tagline: Sua base pessoal de conhecimento técnico — comandos, dicas e melhores práticas num só lugar.
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Claude Code
+      link: /claude-code/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
+    - text: Git
+      link: /git/
+      icon: right-arrow
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+## O que é o DevDex?
 
-## Next steps
+Um índice pessoal de referências técnicas organizado por tecnologia. Consulte rápido, aprenda de verdade.
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
-</CardGrid>
+| Seção | Conteúdo |
+|---|---|
+| [Claude Code](/claude-code/) | Comandos, MCP, dicas, melhores práticas |
+| [Git](/git/) | Comandos essenciais e fluxos de trabalho |
+| [Python](/python/) | Referências e snippets |
+| [Docker](/docker/) | Imagens, containers e compose |
+| [JavaScript](/javascript/) | ES2024+, async, módulos |
+| [Terminal](/terminal/) | Shell, atalhos e produtividade |
