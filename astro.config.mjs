@@ -14,7 +14,7 @@ export default defineConfig({
       description: 'Base pessoal de conhecimento técnico',
       defaultLocale: 'pt-BR',
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/seu-usuario/devdex' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/bronze-ff/DevDex' },
       ],
       components: {
         PageTitle: './src/components/PageTitle.astro',
