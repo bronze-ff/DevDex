@@ -20,15 +20,48 @@ export default defineConfig({
       components: {
         PageTitle: './src/components/PageTitle.astro',
       },
+      pagefind: true,
       sidebar: [
-        { label: 'Claude Code', autogenerate: { directory: 'claude-code' } },
-        { label: 'Git', autogenerate: { directory: 'git' } },
-        { label: 'Python', autogenerate: { directory: 'python' } },
-        { label: 'Docker', autogenerate: { directory: 'docker' } },
-        { label: 'JavaScript', autogenerate: { directory: 'javascript' } },
-        { label: 'Terminal', autogenerate: { directory: 'terminal' } },
-        { label: 'Sites Salvos', autogenerate: { directory: 'sites' } },
-        { label: 'Setup', autogenerate: { directory: 'setup' } },
+        {
+          label: 'Claude Code',
+          collapsed: true,
+          autogenerate: { directory: 'claude-code' },
+        },
+        {
+          label: 'Git',
+          collapsed: true,
+          autogenerate: { directory: 'git' },
+        },
+        {
+          label: 'Terminal',
+          collapsed: true,
+          autogenerate: { directory: 'terminal' },
+        },
+        {
+          label: 'Python',
+          collapsed: true,
+          autogenerate: { directory: 'python' },
+        },
+        {
+          label: 'JavaScript',
+          collapsed: true,
+          autogenerate: { directory: 'javascript' },
+        },
+        {
+          label: 'Docker',
+          collapsed: true,
+          autogenerate: { directory: 'docker' },
+        },
+        {
+          label: 'Sites Salvos',
+          collapsed: true,
+          autogenerate: { directory: 'sites' },
+        },
+        {
+          label: 'Setup',
+          collapsed: true,
+          autogenerate: { directory: 'setup' },
+        },
       ],
     }),
   ],
