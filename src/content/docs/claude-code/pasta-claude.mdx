@@ -1,0 +1,422 @@
+---
+title: A Pasta .claude — Guia Completo
+description: Guia completo sobre CLAUDE.md, comandos customizados, skills, agents e permissões — como configurar cada parte corretamente.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A maioria dos usuários do Claude Code trata a pasta `.claude` como uma caixa-preta. Sabem que existe, a viram aparecer na raiz do projeto, mas nunca a abriram — muito menos entenderam o que cada arquivo dentro dela faz.
+
+Isso é uma oportunidade perdida.
+
+A pasta `.claude` é o painel de controle do comportamento do Claude no seu projeto. Ela guarda suas instruções, comandos customizados, regras de permissão e até a memória do Claude entre sessões. Quando você entende o que está onde e por quê, consegue configurar o Claude Code para funcionar exatamente do jeito que o seu time precisa.
+
+Este guia percorre a anatomia completa da pasta — dos arquivos que você usa todo dia aos que você configura uma vez e esquece.
+
+---
+
+## Duas pastas, não uma
+
+Antes de mergulhar: existem **duas** pastas `.claude`, não uma.
+
+A primeira fica dentro do seu projeto. A segunda fica no seu diretório home:
+
+```
+seu-projeto/
+└── .claude/          ← configuração da equipe (commitada no git)
+
+~/.claude/            ← preferências pessoais e estado local
+```
+
+A pasta do projeto guarda a configuração da equipe. Você commita no git. Todo mundo no time recebe as mesmas regras, os mesmos comandos customizados, as mesmas políticas de permissão.
+
+A pasta global `~/.claude/` guarda suas preferências pessoais e estado local da máquina, como histórico de sessões e auto-memória.
+
+---
+
+## CLAUDE.md — o manual de instruções do Claude
+
+Este é o arquivo mais importante de todo o sistema. Quando você inicia uma sessão do Claude Code, a primeira coisa que ele lê é o `CLAUDE.md`. Ele carrega direto no system prompt e mantém em mente durante a conversa inteira.
+
+**O que você escreve no CLAUDE.md, o Claude vai seguir.**
+
+Se você disser para sempre escrever testes antes da implementação, ele vai. Se disser "nunca use `console.log` para tratamento de erros, sempre use o módulo customizado de logger," ele vai respeitar isso toda vez.
+
+Um `CLAUDE.md` na raiz do projeto é o setup mais comum. Mas você também pode ter um em `~/.claude/CLAUDE.md` para preferências globais que se aplicam a todos os projetos, e até um dentro de subdiretórios para regras específicas de pasta. O Claude lê todos e combina.
+
+### O que realmente pertence ao CLAUDE.md
+
+Escreva:
+
+- Comandos de build, teste e lint (`npm run test`, `make build`, etc.)
+- Decisões arquiteturais chave ("usamos um monorepo com Turborepo")
+- Armadilhas não-óbvias ("TypeScript strict mode está ativo, variáveis não usadas são erros")
+- Convenções de import, padrões de nomenclatura, estilos de tratamento de erro
+- Estrutura de arquivos e pastas dos módulos principais
+
+**Não** escreva:
+
+- Nada que pertence a um linter ou formatter config
+- Documentação completa que você pode linkar
+- Longos parágrafos explicando teoria
+
+<Aside type="tip">
+  Mantenha o CLAUDE.md com menos de 200 linhas. Arquivos maiores que isso começam a consumir contexto demais, e a aderência às instruções do Claude cai de verdade.
+</Aside>
+
+Exemplo mínimo mas eficaz:
+
+```md
+# Projeto: Acme API
+
+## Comandos
+npm run dev          # Inicia servidor de dev
+npm run test         # Roda testes (Jest)
+npm run lint         # Verificação ESLint + Prettier
+npm run build        # Build de produção
+
+## Arquitetura
+- Express REST API, Node 20
+- PostgreSQL via Prisma ORM
+- Todos os handlers ficam em src/handlers/
+- Tipos compartilhados em src/types/
+
+## Convenções
+- Use zod para validação de request em todo handler
+- Shape de retorno é sempre { data, error }
+- Nunca exponha stack traces para o cliente
+- Use o módulo logger, não console.log
+
+## Atenção
+- Testes usam um DB local real, não mocks. Rode `npm run db:test:reset` primeiro
+- TypeScript estrito: zero imports não usados, nunca
+```
+
+São ~20 linhas. Dá ao Claude tudo que precisa para trabalhar produtivamente nessa codebase sem precisar de clarificações constantes.
+
+### CLAUDE.local.md para overrides pessoais
+
+Às vezes você tem uma preferência específica sua, não da equipe toda. Crie `CLAUDE.local.md` na raiz do projeto. O Claude lê junto com o `CLAUDE.md` principal, e é automaticamente ignorado pelo git para suas preferências pessoais nunca entrarem no repo.
+
+---
+
+## A pasta rules/ — instruções modulares que escalam
+
+`CLAUDE.md` funciona ótimo para um projeto único. Mas quando o time cresce, você acaba com um `CLAUDE.md` de 300 linhas que ninguém mantém e todo mundo ignora.
+
+A pasta `rules/` resolve isso.
+
+Todo arquivo markdown dentro de `.claude/rules/` é carregado junto com seu `CLAUDE.md` automaticamente. Em vez de um arquivo gigante, você divide as instruções por tema:
+
+```
+.claude/rules/
+├── code-style.md
+├── testing.md
+├── api-conventions.md
+└── security.md
+```
+
+Cada arquivo fica focado e fácil de atualizar. O membro do time que é responsável pelas convenções de API edita `api-conventions.md`. O responsável pelos padrões de teste edita `testing.md`. Ninguém pisa no trabalho de ninguém.
+
+### Regras com escopo por path
+
+Adicione um bloco de frontmatter YAML ao arquivo de regra e ele só ativa quando o Claude está trabalhando com arquivos que correspondem ao padrão:
+
+```md
+---
+paths:
+  - "src/api/**/*.ts"
+  - "src/handlers/**/*.ts"
+---
+# Regras de Design de API
+
+- Todos os handlers retornam shape { data, error }
+- Use zod para validação do body da request
+- Nunca exponha detalhes de erro internos para os clientes
+```
+
+O Claude não vai carregar esse arquivo quando estiver editando um componente React. Só carrega quando trabalha dentro de `src/api/` ou `src/handlers/`. Regras sem campo `paths` carregam incondicionalmente, em toda sessão.
+
+---
+
+## A pasta commands/ — seus slash commands customizados
+
+O Claude Code já vem com slash commands como `/help` e `/compact`. A pasta `commands/` deixa você adicionar os seus.
+
+Todo arquivo markdown que você colocar em `.claude/commands/` vira um slash command.
+
+Um arquivo chamado `review.md` cria `/project:review`. Um arquivo `fix-issue.md` cria `/project:fix-issue`. O nome do arquivo é o nome do comando.
+
+Exemplo: crie `.claude/commands/review.md`:
+
+```md
+---
+description: Revisa o diff da branch atual antes de fazer merge
+---
+## Mudanças para Revisar
+
+!`git diff --name-only main...HEAD`
+
+## Diff Detalhado
+
+!`git diff main...HEAD`
+
+Revise as mudanças acima buscando:
+1. Problemas de qualidade de código
+2. Vulnerabilidades de segurança
+3. Cobertura de teste faltando
+4. Preocupações de performance
+
+Dê feedback específico e acionável por arquivo.
+```
+
+Rode `/project:review` no Claude Code e ele automaticamente injeta o diff real do git no prompt antes de o Claude ver. A sintaxe `!` com backticks executa comandos shell e embute a saída. É isso que torna esses comandos genuinamente úteis em vez de apenas texto salvo.
+
+### Passando argumentos para comandos
+
+Use `$ARGUMENTS` para receber texto depois do nome do comando:
+
+```md
+---
+description: Investiga e corrige uma issue do GitHub
+argument-hint: [numero-da-issue]
+---
+Veja a issue #$ARGUMENTS neste repo.
+
+!`gh issue view $ARGUMENTS`
+
+Entenda o bug, trace até a causa raiz, corrija, e escreva um
+teste que teria pego isso.
+```
+
+Rodar `/project:fix-issue 234` injeta o conteúdo da issue 234 diretamente no prompt.
+
+### Comandos pessoais vs. de projeto
+
+Comandos de projeto em `.claude/commands/` são commitados e compartilhados com o time. Para comandos que você quer em qualquer lugar independente do projeto, coloque em `~/.claude/commands/`. Esses aparecem como `/user:nome-do-comando`.
+
+---
+
+## A pasta skills/ — workflows reutilizáveis sob demanda
+
+Skills parecem similares às commands na superfície, mas o gatilho é fundamentalmente diferente.
+
+**A distinção principal:**
+
+| | Commands | Skills |
+|---|---|---|
+| **Gatilho** | Você digita `/command` | Claude invoca automaticamente quando o contexto bate |
+| **Uso** | Manual, sob demanda | Automático + pode ser chamado explicitamente |
+| **Estrutura** | Arquivo único `.md` | Pasta com `SKILL.md` + arquivos de suporte |
+
+Skills são workflows que o Claude pode invocar sozinho, sem você digitar um slash command, quando a tarefa corresponde à descrição da skill. Commands esperam por você. Skills monitoram a conversa e agem quando o momento é certo.
+
+Cada skill fica em seu próprio subdiretório com um arquivo `SKILL.md`:
+
+```
+.claude/skills/
+├── security-review/
+│   ├── SKILL.md
+│   └── DETAILED_GUIDE.md
+└── deploy/
+    ├── SKILL.md
+    └── templates/
+        └── release-notes.md
+```
+
+O `SKILL.md` usa frontmatter YAML para descrever quando usá-la:
+
+```md
+---
+name: security-review
+description: Auditoria de segurança abrangente. Use ao revisar código para
+  vulnerabilidades, antes de deploys, ou quando o usuário mencionar segurança.
+allowed-tools: Read, Grep, Glob
+---
+Analise a codebase em busca de vulnerabilidades de segurança:
+
+1. Riscos de SQL injection e XSS
+2. Credenciais ou secrets expostos
+3. Configurações inseguras
+4. Gaps de autenticação e autorização
+
+Reporte achados com ratings de severidade e passos específicos de remediação.
+Referência @DETAILED_GUIDE.md para nossos padrões de segurança.
+```
+
+Quando você diz "revise este PR para problemas de segurança," o Claude lê a descrição, reconhece que bate, e invoca a skill automaticamente.
+
+<Aside type="note">
+  Skills podem agrupar arquivos de suporte junto delas. A referência `@DETAILED_GUIDE.md` acima puxa um documento detalhado que fica ao lado do `SKILL.md`. Commands são arquivos únicos. Skills são pacotes.
+</Aside>
+
+Skills pessoais ficam em `~/.claude/skills/` e estão disponíveis em todos os seus projetos.
+
+---
+
+## A pasta agents/ — personas especializadas de subagentes
+
+Quando uma tarefa é complexa o suficiente para se beneficiar de um especialista dedicado, você pode definir uma persona de subagente em `.claude/agents/`. Cada agente é um arquivo markdown com seu próprio system prompt, acesso a ferramentas e preferência de modelo:
+
+```
+.claude/agents/
+├── code-reviewer.md
+└── security-auditor.md
+```
+
+Exemplo de `code-reviewer.md`:
+
+```md
+---
+name: code-reviewer
+description: Revisor de código expert. Use PROATIVAMENTE ao revisar PRs,
+  verificar bugs, ou validar implementações antes de fazer merge.
+model: sonnet
+tools: Read, Grep, Glob
+---
+Você é um revisor de código sênior focado em corretude e manutenibilidade.
+
+Ao revisar código:
+- Aponte bugs, não apenas problemas de estilo
+- Sugira correções específicas, não melhorias vagas
+- Verifique edge cases e gaps de tratamento de erro
+- Note preocupações de performance apenas quando importam em escala
+```
+
+Quando o Claude precisa de uma revisão de código, ele spawna esse agente em seu próprio context window isolado. O agente faz seu trabalho, comprime os achados e reporta de volta. Sua sessão principal não fica congestionada com milhares de tokens de exploração intermediária.
+
+O campo `tools` restringe o que o agente pode fazer. Um auditor de segurança só precisa de `Read`, `Grep` e `Glob`. Ele não tem nada a ver com escrita de arquivos. Essa restrição é intencional e vale ser explícita.
+
+O campo `model` deixa você usar um modelo mais barato e rápido para tarefas focadas. `haiku` lida bem com a maior parte da exploração somente-leitura. Guarde `sonnet` e `opus` para o trabalho que realmente precisa deles.
+
+Agentes pessoais ficam em `~/.claude/agents/` e estão disponíveis em todos os projetos.
+
+---
+
+## settings.json — permissões e config do projeto
+
+O arquivo `settings.json` dentro de `.claude/` controla o que o Claude pode e não pode fazer. É onde você define quais ferramentas ele pode rodar, quais arquivos pode ler, e se precisa pedir permissão antes de rodar certos comandos.
+
+```json
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Read",
+      "Write",
+      "Edit"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}
+```
+
+O que cada parte faz:
+
+- **`$schema`** — habilita autocomplete e validação inline no VS Code/Cursor. Sempre inclua.
+- **`allow`** — comandos que rodam sem o Claude pedir confirmação. Cubra seus scripts de run, comandos git somente-leitura e operações de arquivo.
+- **`deny`** — comandos bloqueados completamente, não importa o que. Bloqueie comandos shell destrutivos, comandos de rede diretos e arquivos sensíveis como `.env`.
+
+<Aside type="caution">
+  Se algo não está em nenhuma lista, o Claude pergunta antes de prosseguir. Esse meio-termo é intencional — dá uma rede de segurança sem precisar antecipar cada comando possível.
+</Aside>
+
+### settings.local.json para overrides pessoais
+
+Mesma ideia que `CLAUDE.local.md`. Crie `.claude/settings.local.json` para mudanças de permissão que você não quer commitar. É ignorado pelo git automaticamente.
+
+---
+
+## A pasta global ~/.claude/
+
+Você não interage com essa pasta frequentemente, mas é útil saber o que tem nela.
+
+| Arquivo/Pasta | O que é |
+|---|---|
+| `~/.claude/CLAUDE.md` | Carrega em toda sessão, em todos os projetos |
+| `~/.claude/projects/` | Transcrições de sessão e auto-memória por projeto |
+| `~/.claude/commands/` | Comandos pessoais disponíveis em todos os projetos |
+| `~/.claude/skills/` | Skills pessoais disponíveis em todos os projetos |
+| `~/.claude/agents/` | Agentes pessoais disponíveis em todos os projetos |
+
+`~/.claude/projects/` guarda transcrições de sessão e auto-memória por projeto. O Claude Code salva notas automaticamente enquanto trabalha: comandos que descobre, padrões que observa, insights de arquitetura. Esses persistem entre sessões. Você pode navegar e editar com `/memory`.
+
+---
+
+## O quadro completo
+
+Como tudo se encaixa:
+
+```
+seu-projeto/
+├── CLAUDE.md                  # Instruções da equipe (commitado)
+├── CLAUDE.local.md            # Seus overrides pessoais (gitignored)
+│
+└── .claude/
+    ├── settings.json          # Permissões + config (commitado)
+    ├── settings.local.json    # Overrides de permissão pessoais (gitignored)
+    │
+    ├── commands/              # Slash commands customizados
+    │   ├── review.md          # → /project:review
+    │   ├── fix-issue.md       # → /project:fix-issue
+    │   └── deploy.md          # → /project:deploy
+    │
+    ├── rules/                 # Arquivos de instrução modulares
+    │   ├── code-style.md
+    │   ├── testing.md
+    │   └── api-conventions.md
+    │
+    ├── skills/                # Workflows auto-invocados
+    │   ├── security-review/
+    │   │   └── SKILL.md
+    │   └── deploy/
+    │       └── SKILL.md
+    │
+    └── agents/                # Personas especializadas de subagentes
+        ├── code-reviewer.md
+        └── security-auditor.md
+
+~/.claude/
+├── CLAUDE.md                  # Suas instruções globais
+├── settings.json              # Suas configurações globais
+├── commands/                  # Seus comandos pessoais (todos os projetos)
+├── skills/                    # Suas skills pessoais (todos os projetos)
+├── agents/                    # Seus agentes pessoais (todos os projetos)
+└── projects/                  # Histórico de sessão + auto-memória
+```
+
+---
+
+## Setup prático para começar
+
+Se você está começando do zero, aqui está uma progressão que funciona bem:
+
+**Passo 1.** Rode `/init` dentro do Claude Code. Ele gera um `CLAUDE.md` inicial lendo o seu projeto. Edite até os essenciais.
+
+**Passo 2.** Adicione `.claude/settings.json` com regras de allow/deny adequadas para seu stack. No mínimo, permita seus comandos de run e bloqueie leituras de `.env`.
+
+**Passo 3.** Crie um ou dois commands para os workflows que você faz mais. Revisão de código e correção de issues são bons pontos de partida.
+
+**Passo 4.** Conforme o projeto cresce e o `CLAUDE.md` fica cheio, comece a dividir instruções em arquivos `.claude/rules/`. Escope por path onde fizer sentido.
+
+**Passo 5.** Adicione um `~/.claude/CLAUDE.md` com suas preferências pessoais — algo como "sempre escreva tipos antes de implementações" ou "prefira padrões funcionais em vez de class-based."
+
+Isso é tudo que você precisa para 95% dos projetos. Skills e agents entram quando você tem workflows complexos recorrentes que valem a pena empacotar.
+
+---
+
+## A ideia principal
+
+A pasta `.claude` é na verdade um protocolo para dizer ao Claude quem você é, o que o seu projeto faz e quais regras ele deve seguir. Quanto mais claramente você define isso, menos tempo gasta corrigindo o Claude e mais tempo ele passa fazendo trabalho útil.
+
+**`CLAUDE.md` é seu arquivo de maior alavancagem. Acerte esse primeiro. Todo o resto é otimização.**
+
+Comece pequeno, refine ao longo do tempo, e trate como qualquer outra infraestrutura do projeto: algo que rende dividendos todo dia uma vez configurado corretamente.
