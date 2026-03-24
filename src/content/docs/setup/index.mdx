@@ -90,6 +90,25 @@ npx -y ccstatusline@latest
 
 ---
 
+### Get Shit Done (GSD)
+**Framework de meta-prompting e context engineering para Claude Code.**
+
+Instala um sistema de skills com fluxo estruturado: discuss → plan → execute → verify → ship. Suporta orquestração multi-agente, execução em paralelo e múltiplos runtimes de IA.
+
+```bash
+# interativo (escolhe runtime e escopo):
+npx get-shit-done-cc@latest
+
+# ou direto para Claude Code global:
+npx get-shit-done-cc --claude --global
+```
+
+Após instalar, use `/gsd:help` no Claude Code para ver os comandos disponíveis.
+
+[github.com/gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done)
+
+---
+
 ## Workflow de Auditoria de Codebase (4 skills sequenciais)
 
 Skills criadas por [Glaucia Lemos](https://gist.github.com/glaucia86) para auditar, implementar e validar mudanças em codebases existentes. Usadas **em ordem**, como fases de um processo.
@@ -229,6 +248,42 @@ npx -y firecrawl-cli@latest init -y --browser
 
 ---
 
+### notebooklm-py
+**API Python e CLI não oficial para o Google NotebookLM.**
+
+Acesso programático completo ao NotebookLM — cria notebooks, adiciona fontes (URLs, PDFs, YouTube), gera áudios, slides, quizzes, flashcards e integra com agentes de IA como o Claude Code.
+
+```bash
+pip install "notebooklm-py[browser]"
+playwright install chromium
+
+# como skill para Claude Code:
+notebooklm skill install
+```
+
+[github.com/teng-lin/notebooklm-py](https://github.com/teng-lin/notebooklm-py)
+
+---
+
+## CLIs de Backend
+
+### Supabase CLI
+**Interface de linha de comando para gerenciar projetos Supabase localmente e na nuvem.**
+
+Roda instâncias Supabase localmente, gerencia migrations PostgreSQL, faz deploy de edge functions, gera tipos TypeScript a partir do schema e acessa a API de gerenciamento autenticada.
+
+```bash
+# como dev dependency (por projeto):
+npm i supabase --save-dev
+
+# ou globalmente via Homebrew (Linux/Mac):
+brew install supabase/tap/supabase
+```
+
+[github.com/supabase/cli](https://github.com/supabase/cli)
+
+---
+
 ## Checklist de Instalação
 
 Ordem recomendada em uma máquina nova:
@@ -245,3 +300,6 @@ Ordem recomendada em uma máquina nova:
 - [ ] `npm install -g @playwright/cli@latest`
 - [ ] `npm install -g firecrawl-cli`
 - [ ] `uv add browser-use`
+- [ ] `pip install "notebooklm-py[browser]" && playwright install chromium`
+- [ ] `npx get-shit-done-cc --claude --global`
+- [ ] `brew install supabase/tap/supabase`
