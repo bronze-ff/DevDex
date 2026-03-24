@@ -24,60 +24,61 @@ Cada pasta dentro de `docs/` é uma seção do sidebar. Para adicionar conteúdo
 
 ### Sincronização com o remoto
 
-Antes de qualquer trabalho, sempre verificar se o repositório local está atualizado:
+Antes de qualquer trabalho, verificar se o repositório local está atualizado:
 
 ```bash
 git fetch origin
-git status  # verifica se algum branch está atrás do remoto
+git status
 ```
 
-### Branches
+### Quando commitar direto no `master`
 
-Sempre criar branch a partir de `main`. Nunca commitar direto em `main`.
+Para mudanças de conteúdo rotineiras, commit direto no `master` é permitido:
+
+- Adição e edição de páginas `.mdx`
+- Adições a Sites Salvos e Setup
+- README e CLAUDE.md
+- Correções de texto ou links
+
+### Quando criar branch + PR
+
+Para mudanças estruturais ou de código, sempre usar branch + PR:
+
+- Nova seção do sidebar (nova pasta em `docs/`)
+- Mudanças no `astro.config.mjs` que afetam estrutura ou navegação
+- Novos componentes Astro em `src/components/`
+- Atualização de dependências (`package.json`)
+- Qualquer mudança experimental ou de maior risco
 
 Convenção de nomes:
 
 ```
-feat/ISSUE-X-descricao-curta     # nova funcionalidade
-fix/ISSUE-X-descricao-curta      # correção de bug
-refactor/ISSUE-X-descricao       # refatoração
-test/descricao                 # testes pontuais sem issue
-chore/descricao                # manutenção, deps, config
+feat/descricao-curta     # nova funcionalidade
+fix/descricao-curta      # correção de bug
+chore/descricao          # manutenção, deps, config
 ```
 
-Para criar uma branch nova, sempre partir explicitamente de `main` atualizado:
+Criar branch sempre a partir do `master` atualizado:
 
 ```bash
-git checkout main && git pull
-git checkout -b feat/ISSUE-X-descricao
-```
-
-### Worktrees
-
-Para trabalhar em funcionalidades paralelas sem interromper o trabalho atual:
-
-```bash
-git checkout main && git pull
-git worktree add -b feat/ISSUE-X-descricao ../App-9822-ISSUE-X main
-# trabalhar no diretório separado
-git worktree remove ../App-9822-ISSUE-X  # ao finalizar
+git checkout master && git pull
+git checkout -b feat/descricao
 ```
 
 ### Commits
 
-Seguir Conventional Commits. Sempre referenciar a issue do Linear no footer:
+Seguir Conventional Commits:
 
 ```
-feat: adicionar filtro por status nas despesas
-
-Closes ISSUE-X
+feat: adicionar seção de TypeScript ao sidebar
+fix: corrigir link quebrado na página de Git
+docs: atualizar README com novas seções
+chore: atualizar dependência do Starlight
 ```
 
-Tipos: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
+Tipos: `feat`, `fix`, `refactor`, `docs`, `chore`
 
 ### Pull Requests (via gh CLI)
-
-Criar PRs com `gh pr create`. O corpo sempre deve conter `Closes ISSUE-X` para fechar a issue no Linear ao fazer merge:
 
 ```bash
 gh pr create --title "feat: descrição" --body "$(cat <<'EOF'
@@ -88,8 +89,6 @@ gh pr create --title "feat: descrição" --body "$(cat <<'EOF'
 ## Como testar
 1. passo 1
 2. passo 2
-
-Closes ISSUE-X
 EOF
 )"
 ```
@@ -98,44 +97,14 @@ Comandos úteis:
 
 ```bash
 gh pr status                           # PRs abertos no repositório atual
-gh pr checks                           # status de CI do PR atual
 gh pr view                             # detalhes do PR atual
 gh pr merge --squash --delete-branch   # mergear com histórico limpo
 ```
-
-### Política de Merge
-
-**Requer revisão do usuário antes do merge (criar PR e aguardar aprovação):**
-- Qualquer alteração no banco de dados (queries, colunas lidas, DML de aprovação)
-- Regras de negócio (fluxo de aprovação/reprovação, cálculo de retenções)
-- Autenticação e permissões (JWT, middleware auth)
-- Integrações externas
-
-**Merge automático permitido (criar PR e mergear sem revisão):**
-- Correções visuais de UI (cores, espaçamento, tipografia)
-- Textos, labels, mensagens de erro
-- Refatorações internas sem mudança de comportamento
-- Documentação (CLAUDE.md, README)
-
-### Integração Linear ↔ GitHub
-
-- Issues são gerenciadas no Linear (planejamento, prioridade, sprint)
-- PRs no GitHub referenciam as issues via `Closes ISSUE-X`
-- Ao fazer merge do PR, o Linear fecha a issue automaticamente
 
 ---
 
 ## O que NUNCA fazer
 
-**Git:**
-- Nunca commitar direto em `main` — sempre branch + PR
-- Nunca push em apenas um remote — sempre `origin` E `multicanal`
-
-**UI/Design:**
-- Nunca glassmorphism (`backdrop-blur`, `bg-white/80`, transparências em cards) — sistema é flat com bordas sólidas
-- Nunca fonte Inter, Roboto ou system fonts — o projeto usa Bricolage Grotesque + DM Mono
-- Nunca gradient blobs como decoração — backgrounds são planos; grid SVG sutil é o máximo permitido
-- Nunca ícones dentro de círculos coloridos em KPI cards — KPIs usam número grande em mono
-- Nunca `bg-gradient-to-br from-X-900 via-X-800` em logins — login usa navy via inline style com gradiente linear suave
-- Nunca emojis em selects/options — usar texto limpo (ex: "Confirmar", não "✅ Confirmar")
+- Nunca force push no `master`
+- Nunca commitar arquivos de ambiente (`.env`, credenciais)
 
