@@ -110,21 +110,79 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1; /* atrás do conteúdo, acima do fundo do body (NÃO mexer no header) */
   pointer-events: none;
-  background-image: radial-gradient(var(--sl-color-accent) 1px, transparent 1.6px);
-  background-size: 24px 24px;
-  opacity: 0.06;
-  animation: ddx-drift 60s linear infinite;
+  background-image: radial-gradient(var(--sl-color-accent) 1.4px, transparent 1.9px);
+  background-size: 22px 22px;
+  opacity: 0.14;
+  animation: ddx-drift 50s linear infinite;
 }
 @keyframes ddx-drift {
   from { background-position: 0 0; }
-  to   { background-position: 240px 480px; }
+  to   { background-position: 220px 440px; }
 }
-/* mantém o conteúdo acima do fundo */
-.page, header, .sidebar, main, footer { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   body::before { animation: none; }
+}
+
+/* =============================================================
+   Gerador de script de setup
+   ============================================================= */
+.ddx-gen {
+  margin: 1.25rem 0;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ddx-gen__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  background: var(--sl-color-gray-6);
+}
+.ddx-gen__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.82rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+.ddx-gen__tool:hover { border-color: var(--sl-color-accent); }
+.ddx-gen__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.7rem;
+  background: #16161d;
+}
+.ddx-gen__bar span { font-family: var(--sl-font-mono); font-size: 0.72rem; color: #9a9aa6; }
+.ddx-gen__copy {
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  color: #9a9aa6;
+  background: transparent;
+  border: 1px solid #2a2a33;
+  border-radius: 5px;
+  padding: 0.15rem 0.55rem;
+  cursor: pointer;
+}
+.ddx-gen__copy:hover { color: #fff; border-color: var(--sl-color-accent); }
+.ddx-gen__code {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #d7d7e0;
+  background: #0d0d12;
+  overflow-x: auto;
+  white-space: pre;
 }
 
 /* =============================================================

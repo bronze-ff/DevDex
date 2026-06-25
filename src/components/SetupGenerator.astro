@@ -1,0 +1,37 @@
+---
+// SetupGenerator.astro — monta um script winget a partir das ferramentas marcadas.
+// Sem children MDX (lista definida aqui), então é robusto.
+const tools = [
+  { id: 'git', label: 'Git', cmd: 'winget install --id Git.Git -e', on: true },
+  { id: 'node', label: 'Node.js LTS', cmd: 'winget install --id OpenJS.NodeJS.LTS -e', on: true },
+  { id: 'python', label: 'Python', cmd: 'winget install --id Python.Python.3.12 -e' },
+  { id: 'uv', label: 'uv', cmd: 'winget install --id astral-sh.uv -e' },
+  { id: 'vscode', label: 'VS Code', cmd: 'winget install --id Microsoft.VisualStudioCode -e', on: true },
+  { id: 'wt', label: 'Windows Terminal', cmd: 'winget install --id Microsoft.WindowsTerminal -e', on: true },
+  { id: 'nushell', label: 'Nushell', cmd: 'winget install --id Nushell.Nushell -e' },
+  { id: 'starship', label: 'Starship', cmd: 'winget install --id Starship.Starship -e' },
+  { id: 'zoxide', label: 'Zoxide', cmd: 'winget install --id ajeetdsouza.zoxide -e' },
+  { id: 'gh', label: 'GitHub CLI', cmd: 'winget install --id GitHub.cli -e' },
+  { id: 'pwsh', label: 'PowerShell 7', cmd: 'winget install --id Microsoft.PowerShell -e' },
+  { id: 'docker', label: 'Docker Desktop', cmd: 'winget install --id Docker.DockerDesktop -e' },
+  { id: 'powertoys', label: 'PowerToys', cmd: 'winget install --id Microsoft.PowerToys -e' },
+];
+---
+
+<div class="ddx-gen" data-ddx-gen>
+  <div class="ddx-gen__tools">
+    {tools.map((t) => (
+      <label class="ddx-gen__tool">
+        <input type="checkbox" data-cmd={t.cmd} checked={t.on} />
+        <span>{t.label}</span>
+      </label>
+    ))}
+  </div>
+  <div class="ddx-gen__out">
+    <div class="ddx-gen__bar">
+      <span>setup.ps1</span>
+      <button type="button" class="ddx-gen__copy">Copiar</button>
+    </div>
+    <pre class="ddx-gen__code"><code></code></pre>
+  </div>
+</div>
