@@ -154,6 +154,13 @@ body::before {
   user-select: none;
 }
 .ddx-gen__tool:hover { border-color: var(--sl-color-accent); }
+.ddx-gen__tool input[type='checkbox'] {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  flex: none;
+  accent-color: var(--sl-color-accent);
+}
 .ddx-gen__bar {
   display: flex;
   align-items: center;
@@ -215,18 +222,16 @@ body::before {
 
 @media (min-width: 72rem) {
   .ddx-sb-toggle { display: inline-flex; }
-  /* estado recolhido: zera a faixa do menu e esconde o painel */
-  html.ddx-sidebar-collapsed {
-    --sl-sidebar-width: 0rem;
-    --sl-content-inline-start: 0rem;
-  }
+  /* estado recolhido: esconde só o painel esquerdo e zera o recuo do conteúdo.
+     NÃO mexer em --sl-sidebar-width (a TOC da direita usa as mesmas vars). */
   html.ddx-sidebar-collapsed .sidebar-pane { display: none; }
+  html.ddx-sidebar-collapsed .main-frame { padding-inline-start: 0 !important; }
 }
 
 /* =============================================================
    Checklist interativo (task lists viram clicáveis + persistem)
    ============================================================= */
-.sl-markdown-content input[type='checkbox'] {
+.sl-markdown-content li input[type='checkbox'] {
   accent-color: var(--sl-color-accent);
   width: 1rem;
   height: 1rem;

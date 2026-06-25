@@ -3,10 +3,9 @@
   'use strict';
 
   // ── Checklists: task lists `- [ ]` viram clicáveis e persistem ──
-  // (ignora os checkboxes do gerador, que têm data-cmd)
   function initChecklists() {
     var boxes = document.querySelectorAll(
-      '.sl-markdown-content input[type="checkbox"]:not([data-cmd])'
+      '.sl-markdown-content li input[type="checkbox"]:not([data-cmd])'
     );
     boxes.forEach(function (cb, i) {
       if (cb.dataset.ddxInit) return;
@@ -56,14 +55,22 @@
     });
   }
 
-  // ── Sidebar recolhível (botão flutuante, desktop) ──
+  // ── Sidebar recolhível (botão flutuante, só onde há sidebar) ──
   function initSidebarToggle() {
     var KEY = 'ddx-sidebar-collapsed';
     var root = document.documentElement;
-    // re-aplica o estado salvo (o <html> pode resetar em navegações)
-    root.classList.toggle('ddx-sidebar-collapsed', localStorage.getItem(KEY) === '1');
+    var existing = document.getElementById('ddx-sb-toggle');
 
-    if (document.getElementById('ddx-sb-toggle')) return;
+    // páginas splash (home) não têm sidebar — não mostra o botão
+    if (!document.querySelector('.sidebar-pane')) {
+      if (existing) existing.remove();
+      root.classList.remove('ddx-sidebar-collapsed');
+      return;
+    }
+
+    root.classList.toggle('ddx-sidebar-collapsed', localStorage.getItem(KEY) === '1');
+    if (existing) return;
+
     var btn = document.createElement('button');
     btn.id = 'ddx-sb-toggle';
     btn.className = 'ddx-sb-toggle';
