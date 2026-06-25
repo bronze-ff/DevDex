@@ -24,6 +24,11 @@ export default defineConfig({
       pagefind: true,
       editLink: { baseUrl: 'https://github.com/bronze-ff/DevDex/edit/master/' },
       lastUpdated: true,
+      expressiveCode: {
+        styleOverrides: {
+          frames: { terminalTitlebarDotsForeground: 'transparent' },
+        },
+      },
       head: [
         { tag: 'script', attrs: { src: '/scripts/devdex.js', defer: true } },
       ],

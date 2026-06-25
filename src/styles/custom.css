@@ -247,8 +247,8 @@ body::before {
   background: #16161d;
   border-bottom: 1px solid #26262e;
 }
-.ddx-play__dots { display: inline-flex; gap: 0.35rem; }
-.ddx-play__dots i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.ddx-play__dots { display: flex; align-items: center; gap: 6px; }
+.ddx-play__dots i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
 .ddx-play__dots i:nth-child(1) { background: #ff5f57; }
 .ddx-play__dots i:nth-child(2) { background: #febc2e; }
 .ddx-play__dots i:nth-child(3) { background: #28c840; }
@@ -286,6 +286,30 @@ body::before {
 @keyframes ddx-blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .ddx-play__body code::after { animation: none; }
+}
+
+/* =============================================================
+   Pontos coloridos (vermelho/amarelo/verde) nas janelas de
+   terminal do Expressive Code — os padrões foram escondidos
+   via config (terminalTitlebarDotsForeground: transparent).
+   ============================================================= */
+.expressive-code .frame.is-terminal .header {
+  position: relative;
+}
+.expressive-code .frame.is-terminal .header::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 11px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 5px 50%, #ff5f57 0 4.5px, transparent 5px),
+    radial-gradient(circle at 19px 50%, #febc2e 0 4.5px, transparent 5px),
+    radial-gradient(circle at 33px 50%, #28c840 0 4.5px, transparent 5px);
+  background-repeat: no-repeat;
 }
 
 /* =============================================================
