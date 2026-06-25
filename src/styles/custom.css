@@ -247,8 +247,16 @@ body::before {
   background: #16161d;
   border-bottom: 1px solid #26262e;
 }
-.ddx-play__dots { display: flex; align-items: center; gap: 6px; }
-.ddx-play__dots i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.ddx-play__dots { display: flex; align-items: center; gap: 7px; line-height: 0; }
+.ddx-play__dots i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
 .ddx-play__dots i:nth-child(1) { background: #ff5f57; }
 .ddx-play__dots i:nth-child(2) { background: #febc2e; }
 .ddx-play__dots i:nth-child(3) { background: #28c840; }
