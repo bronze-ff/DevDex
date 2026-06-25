@@ -41,9 +41,7 @@
         });
         if (code) code.textContent = lines.join('\n');
       }
-      boxes.forEach(function (cb) {
-        cb.addEventListener('change', rebuild);
-      });
+      boxes.forEach(function (cb) { cb.addEventListener('change', rebuild); });
       if (copy) {
         copy.addEventListener('click', async function () {
           try {
@@ -58,9 +56,35 @@
     });
   }
 
+  // ── Sidebar recolhível (botão flutuante, desktop) ──
+  function initSidebarToggle() {
+    var KEY = 'ddx-sidebar-collapsed';
+    var root = document.documentElement;
+    // re-aplica o estado salvo (o <html> pode resetar em navegações)
+    root.classList.toggle('ddx-sidebar-collapsed', localStorage.getItem(KEY) === '1');
+
+    if (document.getElementById('ddx-sb-toggle')) return;
+    var btn = document.createElement('button');
+    btn.id = 'ddx-sb-toggle';
+    btn.className = 'ddx-sb-toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Recolher ou expandir o menu lateral');
+    function render() {
+      btn.textContent = root.classList.contains('ddx-sidebar-collapsed') ? '☰' : '◀';
+    }
+    btn.addEventListener('click', function () {
+      var c = root.classList.toggle('ddx-sidebar-collapsed');
+      localStorage.setItem(KEY, c ? '1' : '0');
+      render();
+    });
+    render();
+    document.body.appendChild(btn);
+  }
+
   function init() {
     initChecklists();
     initGenerator();
+    initSidebarToggle();
   }
 
   document.addEventListener('DOMContentLoaded', init);
