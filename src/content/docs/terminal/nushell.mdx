@@ -5,7 +5,8 @@ sidebar:
   order: 1
 ---
 
-import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+import TermPlay from '../../../components/TermPlay.astro';
 
 ## Pré-requisitos
 
@@ -24,8 +25,6 @@ Se o Windows Terminal já estiver instalado, o comando acima não faz nada de er
 ---
 
 ## Instalação
-
-<Steps>
 
 1. **Instalar os pacotes principais**
 
@@ -75,8 +74,8 @@ Se o Windows Terminal já estiver instalado, o comando acima não faz nada de er
 
    No final do arquivo, adicione:
 
-   <Tabs>
-   <TabItem label="Via source (recomendado)">
+   **Via `source` (recomendado):**
+
    ```nu
    # --- Configurações Pessoais ---
    $env.config.show_banner = false
@@ -84,8 +83,9 @@ Se o Windows Terminal já estiver instalado, o comando acima não faz nada de er
    source ~/.starship.nu
    # source ~/.carapace.nu   # descomente após instalar o carapace (ver Extras)
    ```
-   </TabItem>
-   <TabItem label="Starship inline (alternativo)">
+
+   **Ou Starship inline (alternativo):**
+
    ```nu
    # --- Configurações Pessoais ---
    $env.config.show_banner = false
@@ -93,16 +93,14 @@ Se o Windows Terminal já estiver instalado, o comando acima não faz nada de er
    # Starship inline — cole a saída de `starship init nu` diretamente aqui
    # em vez de usar source ~/.starship.nu; ambas as formas são válidas.
    ```
-   </TabItem>
-   </Tabs>
 
    Salve e reinicie o terminal.
-
-</Steps>
 
 ---
 
 ## Verificar a instalação
+
+<TermPlay preset="nushell" title="nushell" />
 
 Abra uma nova aba do Nushell e confirme a versão:
 
