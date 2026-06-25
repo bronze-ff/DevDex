@@ -1,0 +1,56 @@
+/* =============================================================
+   custom.css — tema DevDex (estética "AI with Remy")
+   Sobrescreve tokens do Starlight: accent índigo, fontes,
+   headline em fonte pixel (Departure Mono).
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Accent índigo + fontes (tema escuro = padrão do Starlight) ── */
+:root {
+  --sl-color-accent-low: #20203e;
+  --sl-color-accent: #5b5bd6;
+  --sl-color-accent-high: #c8c8f7;
+
+  --sl-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ── Tema claro (paper) ── */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e8e8fc;
+  --sl-color-accent: #4f4fd0;
+  --sl-color-accent-high: #2a2a6a;
+}
+
+/* ── Headline em fonte pixel (marca), sem prejudicar leitura ──
+   Aplica Departure Mono só ao título do site e aos H1/hero.
+   H2+ continuam em Inter para legibilidade dos guias. */
+.site-title,
+.sl-markdown-content h1,
+h1#_top,
+.hero h1 {
+  font-family: 'Departure Mono', var(--sl-font-mono);
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+
+/* ── Splash hero (home) com mais impacto ── */
+.hero h1 {
+  font-size: clamp(2.75rem, 7vw, 4.5rem);
+  line-height: 0.95;
+}
+.hero .tagline {
+  font-size: var(--sl-text-lg);
+  max-width: 42rem;
+}
+
+/* eyebrow mono nos kbd/sub-rótulos não é necessário; mantém o resto padrão */
