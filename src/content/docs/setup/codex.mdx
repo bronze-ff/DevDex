@@ -1,0 +1,117 @@
+---
+title: Codex CLI (WSL + Node)
+description: Instala o WSL, o Node via NVM e o Codex CLI no Windows, e configura os servidores MCP do Codex (Sentry, Supabase, Context7, GitHub).
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Passo a passo para preparar o ambiente no Windows com WSL e instalar o Codex CLI sem problemas de permissão ou PATH.
+
+---
+
+## Instalação
+
+<Steps>
+
+1. **Ativar o WSL**
+
+   Abra o **PowerShell como Administrador** (menu Iniciar → PowerShell → botão direito → Executar como administrador) e rode:
+
+   ```powershell
+   wsl --install
+   ```
+
+   Reinicie o Windows quando o comando terminar. Ao reiniciar, a instalação do Ubuntu inicia automaticamente — crie seu usuário e senha quando solicitado.
+
+2. **Preparar o Ubuntu (WSL)**
+
+   Abra o terminal do **Ubuntu (WSL)** e atualize os pacotes:
+
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   ```
+
+3. **Instalar o Node via NVM**
+
+   Usar o NVM evita problemas de permissão ao instalar pacotes globais.
+
+   ```bash
+   # Instala o NVM
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+   # Carrega o NVM na sessão atual (sem precisar reabrir o terminal)
+   export NVM_DIR="$HOME/.nvm"
+   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+   # Instala o Node LTS (já inclui npm)
+   nvm install --lts
+   ```
+
+4. **Instalar o Codex CLI**
+
+   Com o Node configurado no WSL, instale o Codex globalmente:
+
+   ```bash
+   npm i -g @openai/codex
+   ```
+
+   A instalação via WSL evita os erros de permissão e PATH comuns no Windows ao usar `npm -g`.
+
+</Steps>
+
+---
+
+## MCP no Codex
+
+Configure servidores MCP para ampliar as capacidades do Codex CLI.
+Execute os comandos abaixo **na raiz do repositório**.
+
+> **Nota:** esta página cobre a configuração de MCP para o **Codex CLI**.
+> Para a configuração de MCP no **Claude Code**, consulte [/claude-code/mcp/](/claude-code/mcp/).
+
+### Sentry
+
+```bash
+codex mcp add sentry --url https://mcp.sentry.dev/mcp
+codex mcp login sentry
+```
+
+### Supabase
+
+```bash
+codex mcp add supabase --url https://mcp.supabase.com/mcp
+codex mcp login supabase
+```
+
+### Context7
+
+```bash
+codex mcp add context7 -- npx -y @upstash/context7-mcp --api-key=<SUA_CONTEXT7_API_KEY>
+```
+
+Substitua `<SUA_CONTEXT7_API_KEY>` por uma chave válida obtida no painel do Upstash.
+
+<Aside type="caution">
+  Nunca versione nem compartilhe sua chave da API do Context7. Guarde-a em um gerenciador de senhas e mantenha-a fora de repositórios, histórico de shell e arquivos de configuração commitados.
+</Aside>
+
+### GitHub (via config.toml)
+
+O servidor MCP do GitHub é configurado diretamente no arquivo de configuração do Codex, não via `codex mcp add`.
+
+Edite o arquivo:
+
+```
+C:\Users\SEU_USUARIO\.codex\config.toml
+```
+
+Adicione a seguinte seção:
+
+```toml
+[mcp_servers.github]
+type = "http"
+url = "https://api.githubcopilot.com/mcp/"
+bearer_token_env_var = "CODEX_GITHUB_PERSONAL_ACCESS_TOKEN"
+```
+
+O token de acesso pessoal do GitHub deve ser definido na variável de ambiente `CODEX_GITHUB_PERSONAL_ACCESS_TOKEN` — nunca inclua o valor real no arquivo de configuração.

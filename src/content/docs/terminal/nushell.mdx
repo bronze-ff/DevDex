@@ -1,0 +1,92 @@
+---
+title: Nushell + Starship + Zoxide
+description: Passo a passo para montar um terminal moderno no Windows com Nushell, Starship e Zoxide.
+sidebar:
+  order: 1
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. **Instalar os pacotes principais**
+
+   Execute no **PowerShell** ou **CMD** via Winget:
+
+   ```powershell
+   winget install nushell       # Shell
+   winget install starship      # Prompt visual
+   winget install zoxide        # Navegação inteligente (substituto do cd)
+   ```
+
+2. **Instalar a Nerd Font**
+
+   O Starship precisa de uma fonte com ícones.
+
+   - Baixe a **CaskaydiaCove Nerd Font** (Cascadia Code Nerd Font) em [ryanoasis/nerd-fonts — releases](https://github.com/ryanoasis/nerd-fonts/releases/latest).
+   - Extraia o `.zip` e instale `CaskaydiaCoveNerdFont-Regular.ttf`.
+
+   <Aside type="tip">
+   Evite as versões Mono/Propo para não encolher os ícones no prompt.
+   </Aside>
+
+3. **Configurar o Windows Terminal**
+
+   - Abra o **Windows Terminal** → `Ctrl + ,` para Configurações.
+   - Em **Inicialização**, defina **Nushell** como perfil padrão.
+   - Em **Perfis > Nushell > Aparência**, selecione a fonte **CaskaydiaCove NF** e salve.
+
+4. **Gerar arquivos de inicialização**
+
+   Abra uma aba do **Nushell** e execute:
+
+   ```nu
+   starship init nu | save -f ~/.starship.nu
+   zoxide init nushell | save -f ~/.zoxide.nu
+   ```
+
+5. **Editar `config.nu`**
+
+   Abra o arquivo de configuração:
+
+   ```nu
+   notepad $nu.config-path
+   ```
+
+   No final do arquivo, adicione:
+
+   ```nu
+   # --- Configurações Pessoais ---
+   $env.config.show_banner = false
+   source ~/.zoxide.nu
+   source ~/.starship.nu
+   # source ~/.carapace.nu   # descomente após instalar o carapace (ver Extras)
+   ```
+
+   Salve e reinicie o terminal.
+
+</Steps>
+
+## Extras (opcional)
+
+Ferramentas úteis para enriquecer o ambiente, todas via Winget:
+
+```powershell
+winget install bat      # cat com cores
+winget install ripgrep  # busca muito rápida (grep melhorado)
+winget install fzf      # fuzzy finder
+winget install lazygit  # interface de Git no terminal
+winget install carapace # autocompletes para CLIs
+```
+
+### Ativar Carapace
+
+Após instalar o carapace, gere o arquivo de inicialização:
+
+```nu
+carapace _carapace nushell | save -f ~/.carapace.nu
+```
+
+<Aside type="note">
+Depois descomente a linha `source ~/.carapace.nu` no seu `config.nu` e reinicie o terminal para ativar os autocompletes.
+</Aside>

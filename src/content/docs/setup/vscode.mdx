@@ -1,0 +1,87 @@
+---
+title: VS Code — settings & extensões
+description: Como importar as configurações pessoais do VS Code e as extensões necessárias para reproduzir o ambiente de desenvolvimento.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+
+Configurações do VS Code usadas no dia a dia. O arquivo cobre editor, terminal integrado, temas, ícones, Git, ESLint, Tailwind, spell checker e personalização de UI.
+
+[Baixar vscode-settings.json](/vscode-settings.json)
+
+---
+
+## Como importar
+
+### Opção A — Via paleta de comandos (recomendada)
+
+<Steps>
+
+1. Abra o VS Code.
+
+2. Pressione `Ctrl + Shift + P` para abrir a paleta de comandos.
+
+3. Digite **Open User Settings (JSON)** e pressione Enter.
+
+4. Substitua todo o conteúdo do arquivo pelo conteúdo de [vscode-settings.json](/vscode-settings.json).
+
+5. Salve com `Ctrl + S`.
+
+</Steps>
+
+### Opção B — Copiar o arquivo manualmente
+
+Copie o `vscode-settings.json` diretamente para o diretório de configuração do VS Code no seu sistema:
+
+| Sistema | Caminho |
+|---------|---------|
+| Windows | `%APPDATA%\Code\User\settings.json` |
+| macOS   | `~/Library/Application Support/Code/User/settings.json` |
+| Linux   | `~/.config/Code/User/settings.json` |
+
+<Aside type="caution">
+  Isso substituirá suas configurações atuais. Faça um backup antes, se necessário.
+</Aside>
+
+---
+
+## Extensões necessárias
+
+As configurações referenciam as seguintes extensões. Instale-as pelo Marketplace (`Ctrl + Shift + X`):
+
+| Chave de configuração | Extensão | ID no Marketplace |
+|---|---|---|
+| `workbench.colorTheme`: `"Oscura Dusk"` | **Oscura** (tema de cores) | Busque `Oscura` no Marketplace |
+| `workbench.productIconTheme`: `"fluent-icons"` | **Fluent Icons** | `miguelsolorio.fluent-icons` |
+| `workbench.iconTheme`: `"symbols"` | **Symbols** | `miguelsolorio.symbols` |
+| `custom-ui-style.*` | **Custom UI Style** | `subframe7536.custom-ui-style` |
+| `gitlens.*` | **GitLens** | `eamodio.gitlens` |
+| `eslint.*` | **ESLint** | `dbaeumer.vscode-eslint` |
+| `tailwindCSS.*` | **Tailwind CSS IntelliSense** | `bradlc.vscode-tailwindcss` |
+| `liveServer.*` | **Live Server** | `ritwickdey.liveserver` |
+| `cSpell.*` | **Code Spell Checker** | `streetsidesoftware.code-spell-checker` |
+| `claudeCode.*` | **Claude Code** | `anthropic.claude-code` |
+
+<Aside type="tip">
+  As configurações de `prettier` e `prisma` também são referenciadas implicitamente — instale **Prettier** (`esbenp.prettier-vscode`) e **Prisma** (`Prisma.prisma`) se usar esses recursos.
+</Aside>
+
+---
+
+## Fontes necessárias (não são extensões)
+
+| Fonte | Onde baixar | Uso |
+|-------|-------------|-----|
+| **JetBrains Mono** | [jetbrains.com/mono](https://www.jetbrains.com/mono/) | Editor (`editor.fontFamily`) |
+| **JetBrainsMono Nerd Font** | [nerd-fonts releases](https://github.com/ryanoasis/nerd-fonts/releases/latest) | Terminal integrado (`terminal.integrated.fontFamily`) |
+
+---
+
+## Destaques das configurações
+
+- **UI minimalista** — activity bar, status bar, minimap e scrollbar vertical ocultos; sem command center.
+- **File nesting** — `package.json` aninha configs de ESLint, Prettier, tsconfig, Vite etc.
+- **Terminal** — PowerShell como padrão no Windows, fonte Nerd Font, GPU acceleration ativada.
+- **Auto-detect color scheme** — alterna automaticamente entre tema claro/escuro do sistema (ambos mapeados para `Oscura Dusk`).
+- **Tailwind class regex** — suporte a `tv()`, `cva()` e `tw()` para highlight correto em variantes.
