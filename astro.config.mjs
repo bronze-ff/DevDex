@@ -13,7 +13,9 @@ export default defineConfig({
     starlight({
       title: 'DevDex',
       description: 'Base pessoal de conhecimento técnico',
-      defaultLocale: 'pt-BR',
+      locales: {
+        root: { label: 'Português', lang: 'pt-BR' },
+      },
       customCss: ['./src/styles/custom.css'],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/bronze-ff/DevDex' },
