@@ -1,0 +1,147 @@
+---
+title: Git — config & SSH
+description: Configuração inicial do Git no Windows, geração de chave SSH ed25519, integração com o GitHub e credential helper.
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Passos para deixar o Git e o GitHub prontos em uma máquina Windows zerada: identidade, autocrlf, branch padrão, autenticação SSH e o `gh` CLI.
+
+---
+
+## 1. Configuração global do Git
+
+<Steps>
+
+1. **Defina nome e e-mail** — esses dados aparecem em todos os commits.
+
+   ```bash
+   git config --global user.name "Seu Nome"
+   git config --global user.email "seu@email.com"
+   ```
+
+2. **Normalize quebras de linha no Windows.**  
+   `core.autocrlf true` faz o Git converter `LF → CRLF` no checkout e `CRLF → LF` no commit, evitando ruído de diff entre sistemas.
+
+   ```bash
+   git config --global core.autocrlf true
+   ```
+
+3. **Defina `main` como branch padrão** para novos repositórios (alinha com o padrão atual do GitHub).
+
+   ```bash
+   git config --global init.defaultBranch main
+   ```
+
+4. **Confirme as configurações salvas:**
+
+   ```bash
+   git config --global --list
+   ```
+
+</Steps>
+
+---
+
+## 2. Gerar chave SSH (ed25519)
+
+O algoritmo ed25519 é o recomendado atualmente — mais seguro e com chaves menores que RSA.
+
+<Aside type="caution">
+A chave **privada** (`id_ed25519`) jamais deve ser compartilhada, commitada em repositórios ou enviada para qualquer serviço. Apenas a chave pública (`id_ed25519.pub`) é adicionada ao GitHub.
+</Aside>
+
+<Steps>
+
+1. **Gere o par de chaves.** Substitua o e-mail pelo mesmo usado no GitHub.
+
+   ```bash
+   ssh-keygen -t ed25519 -C "seu@email.com"
+   ```
+
+   Pressione Enter para aceitar o caminho padrão (`~/.ssh/id_ed25519`) e defina uma passphrase segura quando solicitado.
+
+2. **Inicie o agente SSH e adicione a chave** (PowerShell com privilégio de administrador, se necessário).
+
+   ```powershell
+   # PowerShell (como administrador, se o serviço não estiver rodando)
+   Get-Service ssh-agent | Set-Service -StartupType Automatic
+   Start-Service ssh-agent
+
+   # Adicionar a chave ao agente
+   ssh-add $env:USERPROFILE\.ssh\id_ed25519
+   ```
+
+3. **Copie a chave pública para a área de transferência.**
+
+   ```powershell
+   # PowerShell
+   Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub | clip
+   ```
+
+4. **Adicione no GitHub:**  
+   Acesse **GitHub → Settings → SSH and GPG keys → New SSH key**, cole o conteúdo copiado, dê um título descritivo (ex.: `notebook-dell-2025`) e salve.
+
+5. **Teste a conexão:**
+
+   ```bash
+   ssh -T git@github.com
+   # Esperado: Hi &lt;usuario&gt;! You've successfully authenticated...
+   ```
+
+</Steps>
+
+---
+
+## 3. Autenticar com o GitHub CLI (`gh`)
+
+O `gh` facilita operações como criar PRs, clonar e gerenciar releases direto do terminal. Instale pelo [site oficial](https://cli.github.com/) ou via winget:
+
+```powershell
+winget install --id GitHub.cli
+```
+
+Em seguida, autentique:
+
+<Steps>
+
+1. Inicie o fluxo de login interativo.
+
+   ```bash
+   gh auth login
+   ```
+
+2. Nas perguntas do assistente, selecione:
+   - **GitHub.com**
+   - **SSH** (para usar a chave criada acima)
+   - Autentique pelo navegador quando solicitado.
+
+3. Confirme que está autenticado:
+
+   ```bash
+   gh auth status
+   ```
+
+</Steps>
+
+---
+
+## 4. Credential helper (HTTPS)
+
+Mesmo usando SSH para operações do dia a dia, alguns contextos ainda usam HTTPS (ex.: certos ambientes CI, ferramentas de terceiros). O **Git Credential Manager** (incluído no Git for Windows) armazena credenciais com segurança no Gerenciador de Credenciais do Windows.
+
+```bash
+git config --global credential.helper manager
+```
+
+Na primeira operação HTTPS autenticada, uma janela do GCM abre para login — a credencial é salva e não é solicitada novamente.
+
+---
+
+## Referências
+
+- [Documentação oficial do Git — primeiros passos](https://git-scm.com/book/pt-br/v2/Come%C3%A7ando-Configura%C3%A7%C3%A3o-Inicial-do-Git)
+- [GitHub Docs — Generating a new SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+- [GitHub CLI — Manual](https://cli.github.com/manual/)

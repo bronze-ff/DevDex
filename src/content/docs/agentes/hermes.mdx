@@ -1,0 +1,188 @@
+---
+title: Hermes Agent
+description: O que é o Hermes Agent, como ele se relaciona com o OpenClaw, e como instalar e configurar modelos gratuitos via OpenRouter e NVIDIA Build.
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Hermes é um **harness open-source de agentes de IA autônomos** — não é um modelo de linguagem, mas o arcabouço que dá a um agente memória persistente, skills, ferramentas, agendamento e superfícies de chat para rodar 24/7. O agente controla o PC (mouse, teclado, apps), executa tarefas de ponta a ponta e pode ser acionado por Telegram, Discord, Slack ou pela interface desktop.
+
+<Aside type="caution">
+A maior parte do que se sabe sobre o Hermes vem de tutoriais de criadores de conteúdo, não de documentação oficial. Números como rate limits, nomes de modelos e requisitos de hardware são **afirmações a verificar**. O fabricante é citado nas fontes como "Nous Research", mas a atribuição ainda é inconsistente entre os tutoriais.
+</Aside>
+
+## O que o Hermes faz
+
+- **Model-agnostic**: não está preso a um modelo — você escolhe o "cérebro" (OpenRouter, NVIDIA Build, Anthropic, Codex etc.) e pode trocar sem refazer a infra.
+- **Memória em camadas**: sessões contínuas com contexto persistente; o agente não precisa ser re-explicado a cada conversa. Personalizável via arquivo `soul.md`.
+- **Auto-skills**: transforma padrões de uso em skills reutilizáveis (captura de padrão + documentação, não fine-tuning).
+- **Computer-use**: controla o PC localmente — navega em sites, abre apps, digita — e muda de estratégia se travar.
+- **Sub-agentes em paralelo**: delega subtarefas para agentes especializados com loop de verificação (maker-checker).
+- **Conectores MCP**: integra nativamente com ferramentas como Notion, ClickUp, Slack e Composio.
+- **Migração nativa do OpenClaw**: preserva memória e identidade ao migrar de um harness para o outro.
+
+## Hermes vs. OpenClaw
+
+O [OpenClaw](https://github.com/open-claw/openclaw) é o framework concorrente mais citado — e o Hermes surgiu como alternativa na onda de mai–jun/2026. As diferenças táticas mais comentadas nas fontes:
+
+| Aspecto | Hermes | OpenClaw |
+|---|---|---|
+| Roteamento de modelos | Qualquer modelo via OpenRouter / NVIDIA / etc. | Modelo único configurado |
+| Heartbeat / wake-up | Precisa de crons explícitos | Heartbeat nativo |
+| Ecossistema de skills | Em crescimento (early beta) | Muito mais skills disponíveis |
+| RAM relatada (VPS) | ~2 GB (a verificar) | ~4 GB (a verificar) |
+| Migração entre harnesses | Migração nativa Hermes ↔ OpenClaw | — |
+
+A própria comunidade admite que "funcionalidade é commodity" — a escolha entre os dois é tática e depende do seu ecossistema atual.
+
+---
+
+## Instalação
+
+<Steps>
+
+1. **Pré-requisitos**
+
+   O instalador baixa automaticamente as dependências (Python, Git, Node.js, FFmpeg), mas convém ter o **Node.js** já instalado.
+
+2. **Baixar e rodar o instalador**
+
+   <Tabs>
+   <TabItem label="Windows (PowerShell)">
+
+   ```powershell
+   iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+   ```
+
+   </TabItem>
+   <TabItem label="Linux / macOS / WSL2">
+
+   ```bash
+   curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+   ```
+
+   </TabItem>
+   </Tabs>
+
+   <Aside type="note">
+   Verifique o endereço exato do instalador no site oficial antes de rodar — URLs de scripts de instalação mudam entre versões. As fontes citam `hermes-agent.nousresearch.com`, mas confirme antes de executar.
+   </Aside>
+
+3. **Escolher o modo de setup**
+
+   O instalador oferece dois modos:
+   - **Quick setup**: configuração guiada, escolhe provedor de LLM e já sobe o agente.
+   - **Full setup**: mais opções — navegador, geração de imagem, voz/TTS, busca.
+
+   Para um primeiro uso, o quick setup é suficiente.
+
+4. **Configurar o provedor de LLM**
+
+   Aqui você escolhe o "cérebro" do agente. As opções incluem Anthropic, Codex/OpenAI, OpenRouter e NVIDIA Build. Veja a seção [Modelos gratuitos](#modelos-gratuitos) abaixo para as opções sem custo.
+
+5. **Habilitar o computer-use** (se quiser controle do PC)
+
+   ```bash
+   hermes computer-use install
+   ```
+
+   O sistema vai pedir confirmações manuais por regras de segurança — é esperado.
+
+6. **Iniciar o Hermes**
+
+   ```bash
+   hermes
+   ```
+
+   Para reabrir a configuração com os valores já salvos:
+
+   ```bash
+   hermes setup
+   ```
+
+   Para encerrar: `Ctrl+C`.
+
+7. **Configurar gateway para Telegram** (opcional)
+
+   ```bash
+   hermes gateway setup
+   ```
+
+   Você vai precisar criar um bot no [BotFather](https://t.me/botfather), obter o token e informar o seu ID de usuário para restringir o acesso — só o seu ID consegue conversar com o agente.
+
+</Steps>
+
+<Aside type="tip">
+Se o pacote de mensageria falhar no setup, instale manualmente:
+
+```bash
+pip install "hermes-agent[messaging]"
+```
+
+O Hermes está em early beta — falhas pontuais são esperadas.
+</Aside>
+
+---
+
+## Modelos gratuitos
+
+O Hermes não cobra por si só — o custo fica no provedor de LLM que você conecta. Duas opções sem custo de tokens:
+
+### NVIDIA Build
+
+A plataforma [build.nvidia.com](https://build.nvidia.com) oferece endpoints de modelos prontos gratuitamente, sem exigir hardware NVIDIA e sem cartão de crédito. Modelos citados como gratuitos nas fontes: Nemotron, DeepSeek, GLM, Kimi, Qwen (disponibilidade pode mudar — filtre por "free endpoints" no site).
+
+<Steps>
+
+1. Crie uma conta em [build.nvidia.com](https://build.nvidia.com).
+2. Filtre os modelos por **free endpoints**.
+3. Gere uma API key (configure a expiração conforme sua necessidade).
+4. No setup do Hermes, selecione **NVIDIA** como provedor e cole a chave.
+
+</Steps>
+
+O rate limit da conta gratuita é citado como ~40 requisições/minuto nas fontes (a verificar). Modelos gratuitos ocasionalmente travam — ganha-se em custo, perde-se em velocidade e confiabilidade.
+
+### OpenRouter
+
+O [OpenRouter](https://openrouter.ai) agrega 200+ modelos com uma única chave de API, incluindo modelos com tier gratuito. É útil para testar diferentes modelos sem múltiplas contas.
+
+No setup do Hermes, selecione **OpenRouter** como provedor e cole sua chave de API.
+
+<Aside type="caution">
+Modelos gratuitos podem usar os dados enviados para treinar seus modelos — verifique os termos de cada modelo antes de enviar informações sensíveis.
+</Aside>
+
+---
+
+## Rodando em VPS (24/7)
+
+Para manter o agente ativo o tempo todo, o Hermes roda bem em VPS com ~2 GB de RAM (a verificar). Provedores como Hostinger e HostGator oferecem imagens pré-configuradas para o Hermes.
+
+**Atenção ao heartbeat**: ao contrário do OpenClaw, o Hermes não tem wake-up nativo — você precisa configurar **crons explícitos** para que o agente execute rotinas agendadas.
+
+Múltiplos **perfis isolados** por função são suportados (uso pessoal, uso profissional, chaves read-only), o que ajuda na separação de contextos e no controle de acesso.
+
+---
+
+## Fontes
+
+<CardGrid>
+  <LinkCard
+    title="Tutorial de instalação em VPS (Vini — AI Coders Academy)"
+    href="https://www.youtube.com/watch?v=7v-UDxCUKMA"
+    description="Passo a passo de instalação em VPS, integração com Telegram e alerta de segurança."
+  />
+  <LinkCard
+    title="Instalação grátis com NVIDIA Build (Kauã Miguel)"
+    href="https://www.youtube.com/watch?v=XK-zLxFaATo"
+    description="Tutorial Windows com NVIDIA Build como provedor gratuito e gateway Telegram."
+  />
+  <LinkCard
+    title="Modelos 100% grátis e teste de computer-use (Robson Oliveira)"
+    href="https://www.youtube.com/watch?v=bOuC3RHpBak"
+    description="Setup com NVIDIA Build, demonstração de auto-correção de estratégia e recurso /goal."
+  />
+</CardGrid>

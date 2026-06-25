@@ -1,0 +1,225 @@
+---
+title: Loops & Loop Engineering
+description: O que é um loop de agente, os tipos de loop (maker-checker, gate humano, loop-até-passar), como projetar um bom loop e o /loop do Claude Code.
+sidebar:
+  order: 1
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+
+Um agente que só **responde** é diferente de um agente que **entrega**. A diferença está no loop.
+
+## O que é um loop de agente
+
+Na maioria das interações com IA, você prompta → o modelo responde → fim. Em um **loop de agente**, a execução é cíclica: o agente descobre, planeja, age, verifica e repete — até que uma condição de parada verificável seja atingida.
+
+```
+┌─────────────────────────────────────────┐
+│  LOOP                                   │
+│                                         │
+│  PLAN → ACT → VERIFY → ✓ done? ──► fim │
+│            ↑                   │        │
+│            └────── não ────────┘        │
+└─────────────────────────────────────────┘
+```
+
+A virada conceitual é sair do *prompt isolado* para a **arquitetura do sistema**: quem dispara, quem verifica, onde fica o estado, quando parar.
+
+> "Você não deveria mais promptar agentes; deveria projetar loops que promptam seus agentes."
+> — atribuído a [Addy Osmani](https://addyosmani.com/)
+
+---
+
+## Tipos de loop
+
+### Por forma de disparo
+
+<Tabs>
+  <TabItem label="Heartbeat">
+    Roda em **intervalo regular** enquanto a sessão está viva (ex.: a cada 5 ou 30 minutos). Ideal para vigilância contínua — checar novos tickets, monitorar um processo.
+
+    ```
+    a cada 5 min → cheque se há novo item na fila → processe
+    ```
+  </TabItem>
+  <TabItem label="Cron">
+    Roda num **horário ou agenda definidos** (ex.: toda sexta às 9h). Sobrevive ao notebook fechado quando configurado via infra externa (GitHub Actions, Routines da Anthropic, cron do sistema).
+
+    ```
+    toda sexta 09:00 → gera resumo semanal → posta no canal
+    ```
+  </TabItem>
+  <TabItem label="Hook / Evento">
+    Disparado por um **evento do ciclo de vida** (uma ferramenta foi chamada, sessão iniciou) ou por um **webhook externo** (chegou e-mail, PR aberto, issue criada). Encadeia sistemas sem polling.
+
+    ```
+    PR aberto → revisa diff → comenta no GitHub
+    ```
+  </TabItem>
+  <TabItem label="Goal / Condição">
+    Roda até que um **resultado mensurável seja validado**. Não é por horário — é por estado. Requer condição de parada objetiva; sem ela, o loop gasta tokens indefinidamente.
+
+    ```
+    rode até → todos os testes em test/auth passem
+    ```
+  </TabItem>
+</Tabs>
+
+### Por padrão de verificação
+
+<CardGrid>
+  <Card title="Maker-Checker" icon="approve-check">
+    Um agente **cria**; um segundo agente **verifica** de forma independente. Sem esse portão, o agente concorda consigo mesmo e erros passam. O custo dobra, mas a qualidade compensa quando a tarefa importa.
+  </Card>
+  <Card title="Gate humano" icon="warning">
+    Ações **irreversíveis** (deploy, push com force, chamada a API de produção) exigem aprovação humana antes de prosseguir. O loop pausa, notifica e aguarda. Não é optional — é freio de segurança.
+  </Card>
+  <Card title="Loop-até-passar" icon="rocket">
+    O agente roda até uma condição objetiva ser satisfeita: testes verdes, lint limpo, build sem erro. Combina bem com o Maker-Checker: o verificador é quem declara "passou".
+  </Card>
+</CardGrid>
+
+---
+
+## As peças de um loop bem projetado
+
+<Steps>
+
+1. **Condição de parada verificável**
+
+   "Todos os testes em `test/auth` passam" é uma parada. "Deixe melhor" não é — é convite a gastar tokens sem saber quando terminar.
+
+2. **Estado externo à conversa**
+
+   O modelo esquece entre execuções. A memória precisa estar em disco: um `STATE.md`, uma issue, um arquivo de log. *"The agent forgets, the repo doesn't."*
+
+3. **Verificador independente (Maker-Checker)**
+
+   Quem cria não pode ser quem aprova. Use um segundo agente (ou um segundo passo na mesma sessão) para auditar o output antes de aceitar.
+
+4. **Gate humano para ações irreversíveis**
+
+   Defina antes quais ações precisam de aprovação. Não delegue isso ao julgamento do agente em tempo real.
+
+5. **Raio de impacto definido**
+
+   Liste explicitamente: quais repos, quais branches, quais comandos, quais APIs o loop pode tocar. O que não está na lista está proibido.
+
+6. **Teto de custo e limite de passos**
+
+   Loops sem freio acumulam custo silenciosamente. Defina um número máximo de iterações e um alerta de gasto antes de ligar o loop em modo autônomo.
+
+</Steps>
+
+<Aside type="caution" title="Custo compõe a cada volta">
+  A cada iteração o agente relê todo o contexto acumulado — que cresce. Um Maker-Checker dobra a conta (dois modelos leem). A métrica que importa é **custo por mudança aceita**: abaixo de ~50% de aceite, o loop custa mais do que entrega.
+</Aside>
+
+---
+
+## Você precisa de um loop?
+
+Antes de construir, verifique os quatro critérios. Se algum faltar, mantenha o prompt manual:
+
+| Critério | Pergunta |
+|---|---|
+| Recorrência | A tarefa se repete pelo menos semanalmente? |
+| Rejeição automática | Algo consegue reprovar output ruim sem você? |
+| Fim a fim | O agente consegue executar a tarefa inteira sozinho? |
+| "Done" objetivo | Você consegue escrever em uma frase quando termina? |
+
+---
+
+## O `/loop` do Claude Code
+
+O Claude Code tem comandos nativos para cada forma de disparo:
+
+```bash
+# Loop dentro da sessão (repete enquanto a sessão está aberta)
+/loop "rode os testes e corrija falhas até tudo passar"
+
+# Loop por condição de parada
+/goal "todos os testes em test/auth devem passar"
+
+# Routines — trabalho recorrente que sobrevive ao notebook fechado
+# (configurado via interface da Anthropic ou API; roda na infra deles)
+```
+
+A distinção importante:
+
+- `/loop` — repete um prompt enquanto a **sessão está viva**.
+- `/goal` — roda por **condição**, não por horário; um modelo separado verifica a cada turno se a condição foi satisfeita.
+- **Routines** — trabalho recorrente que **sobrevive ao notebook fechado** (roda na infra da Anthropic; gatilho por agenda, API ou evento).
+
+---
+
+## Exemplo: pedindo um loop ao Claude Code
+
+```ansi title="✻ Claude Code"
+> Quero um loop que rode os testes de autenticação, corrija erros e só pare quando todos passarem. Não mexa em arquivos fora de src/auth e test/auth.
+
+✻ Analisando o projeto...
+
+Vou criar um loop com as seguintes regras:
+- Escopo: apenas src/auth/** e test/auth/**
+- Condição de parada: todos os testes em test/auth passando (exit 0)
+- Verificação: após cada correção rodo `npm test -- test/auth` e leio o relatório
+- Máximo de iterações: 10 (para evitar loop infinito)
+- Gate humano: se precisar alterar dependências externas, paro e peço aprovação
+
+Posso prosseguir com esse escopo?
+```
+
+O agente bem projetado **não sai fazendo** — ele confirma escopo, condição de parada e limites antes de entrar no ciclo.
+
+---
+
+## Como começar (a ordem que funciona)
+
+<Steps>
+
+1. **Faça uma execução manual confiável.** Execute a tarefa uma vez manualmente e valide que funciona.
+
+2. **Vire skill.** Escreva o conhecimento do projeto (contexto, convenções, o que não tocar) em um arquivo de skill ou `CLAUDE.md`. Sem isso, o loop re-deriva tudo do zero a cada ciclo.
+
+3. **Embrulhe num loop com portão e parada.** Adicione a condição de parada verificável e o verificador independente.
+
+4. **Só então agende.** Routines, crons e automações vêm por último — depois que o loop manual está funcionando bem.
+
+</Steps>
+
+### Versão mínima: loop "à mão" em qualquer LLM
+
+Você consegue construir um loop sem infra nenhuma com um prompt estruturado:
+
+```
+TASK: <descrição>
+SUCCESS CRITERIA: <condição objetiva e verificável>
+
+PROTOCOL:
+1. PLAN — descreva o que vai fazer
+2. DO — execute
+3. VERIFY — pontue de 1-10 cada critério
+4. DECIDE:
+   - todos ≥ 8 → responda "FINAL: <resultado>"
+   - algum < 8 → responda "ITERATING: <o que vai corrigir>" e volte ao passo 1
+```
+
+Falta só o gatilho autônomo — mas o ciclo já existe.
+
+---
+
+## Dynamic Workflows: loops multiagente no Claude Code
+
+O Claude Code tem um recurso chamado **Dynamic Workflows** em que a sessão principal dispara múltiplos subagentes em paralelo. Eles trabalham de forma independente — e podem revisar os resultados uns dos outros — antes de consolidar a resposta na sessão principal. É o padrão Maker-Checker aplicado em escala: vários verificadores, debate entre perspectivas, resultado consolidado.
+
+Útil para pesquisa, análise de múltiplos arquivos em paralelo e qualquer tarefa onde uma perspectiva única seria limitante.
+
+---
+
+## Referências
+
+- [Addy Osmani — Loop Engineering](https://addyosmani.com/) — origem da frase e do mapa das peças de um loop
+- [DSA — Loop Engineering](https://newsletter.pragmaticengineer.com/) — casos reais de custo e falhas (os números extremos são reais)
+- [Claire Vo — How I AI](https://clairevo.com/) — as quatro formas de disparo
+- [Anatoli Kopadze — Loops Explained](https://kopadze.com/) — o teste dos quatro critérios e a ordem de construção

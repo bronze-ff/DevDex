@@ -1,29 +1,183 @@
 ---
 title: Fluxos de Trabalho
-description: Workflows comuns com Git para projetos solo e em equipe.
+description: Workflows comuns com Git para projetos solo e em equipe — feature branch, fork/upstream e resolução de conflitos.
 sidebar:
   order: 3
 ---
 
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
 ## Feature Branch Flow
 
-```bash
-git checkout -b feat/minha-feature   # cria branch
-# ... trabalha ...
-git add .
-git commit -m "feat: adiciona minha feature"
-git push -u origin feat/minha-feature
-# abre PR e faz merge
-git checkout main
-git pull
-git branch -d feat/minha-feature
-```
+O modelo mais usado em equipes: cada funcionalidade vive em uma branch isolada e entra via Pull Request.
+
+<Steps>
+
+1. **Sincronize a main antes de começar**
+
+   ```bash
+   git switch main
+   git pull origin main
+   ```
+
+2. **Crie a branch da feature**
+
+   ```bash
+   git switch -c feat/minha-feature
+   ```
+
+3. **Trabalhe e commite**
+
+   ```bash
+   git add <arquivos>
+   git commit -m "feat: descrição curta da mudança"
+   ```
+
+   Faça commits pequenos e atômicos — cada um deve representar uma mudança coerente.
+
+4. **Publique a branch e abra o PR**
+
+   ```bash
+   git push -u origin feat/minha-feature
+   # abra o Pull Request na interface do GitHub/GitLab
+   ```
+
+5. **Após merge, limpe localmente**
+
+   ```bash
+   git switch main
+   git pull
+   git branch -d feat/minha-feature
+   ```
+
+</Steps>
+
+## Fork e Upstream (open source / projetos externos)
+
+Ao contribuir para um repositório que você não controla, você trabalha em um fork próprio e mantém o original como remote `upstream`.
+
+<Steps>
+
+1. **Configure o upstream uma vez**
+
+   ```bash
+   git remote add upstream https://github.com/original/repo.git
+   git remote -v   # confirme: origin (seu fork) + upstream (original)
+   ```
+
+2. **Sincronize com o upstream antes de criar branches**
+
+   ```bash
+   git fetch upstream
+   git switch main
+   git merge upstream/main
+   git push origin main   # mantenha seu fork atualizado
+   ```
+
+3. **Crie a branch, trabalhe e abra PR para o upstream**
+
+   ```bash
+   git switch -c fix/meu-ajuste
+   # ... trabalhe ...
+   git push origin fix/meu-ajuste
+   # abra PR do seu fork → repositório original
+   ```
+
+</Steps>
+
+## Resolução de Conflitos
+
+Conflitos ocorrem quando o mesmo trecho foi editado em duas branches. O Git marca o arquivo e você decide o que fica.
+
+<Steps>
+
+1. **Identifique os arquivos em conflito**
+
+   ```bash
+   git status
+   # arquivos listados como "both modified"
+   ```
+
+2. **Edite e resolva os marcadores**
+
+   O Git insere blocos como este nos arquivos conflitados:
+
+   ```
+   <<<<<<< HEAD
+   versão da branch atual
+   =======
+   versão que está sendo mergeada
+   >>>>>>> feat/outra-branch
+   ```
+
+   Edite o arquivo deixando apenas o conteúdo correto (remova todos os marcadores `<<<<<<<`, `=======`, `>>>>>>>`).
+
+3. **Marque como resolvido e conclua**
+
+   ```bash
+   git add <arquivo-resolvido>
+   git commit   # abre editor com mensagem de merge padrão
+   ```
+
+   Para abortar o merge e voltar ao estado anterior:
+
+   ```bash
+   git merge --abort
+   ```
+
+</Steps>
+
+<Aside type="tip">
+Ferramentas de merge visual (`git mergetool`, extensões de VSCode, IntelliJ) facilitam muito a resolução — especialmente em arquivos grandes com múltiplos conflitos.
+</Aside>
 
 ## Desfazendo coisas
+
+<Tabs>
+  <TabItem label="Seguro (revert)">
+
+`git revert` cria um novo commit que desfaz as mudanças — preserva o histórico e é seguro em branches públicas.
+
+```bash
+git revert <hash>            # reverte um commit específico
+git revert HEAD              # reverte o último commit
+git revert <h1>..<h2>        # reverte um intervalo
+```
+
+  </TabItem>
+  <TabItem label="Descartando mudanças locais">
 
 ```bash
 git restore <arquivo>        # descarta mudanças não staged
 git restore --staged <arq>   # remove do stage
-git revert <hash>            # reverte commit (seguro)
-git reset --hard HEAD~1      # desfaz último commit (destrutivo)
+git restore .                # descarta tudo no working tree
 ```
+
+  </TabItem>
+  <TabItem label="Reset (cuidado)">
+
+<Aside type="caution">
+`git reset --hard` **destrói commits e mudanças locais** permanentemente — eles somem do `git log`. Use só em branches locais que ainda não foram publicadas.
+
+Se você já fez o reset e precisa recuperar, o `reflog` ainda guarda a referência:
+
+```bash
+git reflog
+# encontre o hash do estado desejado, ex: abc1234
+
+git switch -c recovery/salvamento abc1234
+# ou para voltar a branch atual:
+git reset --hard abc1234
+```
+
+O reflog fica disponível por 90 dias por padrão.
+</Aside>
+
+```bash
+git reset --soft HEAD~1      # desfaz commit, mantém stage
+git reset --mixed HEAD~1     # desfaz commit e stage, mantém working tree
+git reset --hard HEAD~1      # desfaz tudo (destrutivo — veja aviso acima)
+```
+
+  </TabItem>
+</Tabs>

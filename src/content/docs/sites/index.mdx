@@ -1,11 +1,68 @@
 ---
 title: Sites Salvos
-description: Coleção de sites úteis, referências e ferramentas salvas para consulta.
+description: Coleção de links úteis organizados por categoria — docs oficiais, ferramentas de IA, design e mais.
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Sites interessantes salvos para referência futura.
+Links de referência organizados por relevância para o setup e o dia a dia de desenvolvimento.
+
+---
+
+## Essenciais / Docs oficiais
+
+Downloads e documentação dos pilares do ambiente de desenvolvimento.
+
+<CardGrid>
+  <LinkCard
+    title="Node.js"
+    description="Runtime JavaScript server-side — downloads, API docs e guias de release."
+    href="https://nodejs.org/"
+    target="_blank"
+  />
+  <LinkCard
+    title="Python"
+    description="Download oficial do Python e documentação da linguagem e biblioteca padrão."
+    href="https://www.python.org/"
+    target="_blank"
+  />
+  <LinkCard
+    title="Git"
+    description="Download do Git, referência completa de comandos e o Pro Git book gratuito."
+    href="https://git-scm.com/"
+    target="_blank"
+  />
+  <LinkCard
+    title="Docker"
+    description="Plataforma de contêineres — instalar Docker Desktop, referência da CLI e Docker Hub."
+    href="https://www.docker.com/"
+    target="_blank"
+  />
+  <LinkCard
+    title="VS Code"
+    description="Editor da Microsoft — download, release notes, extensões e documentação de API."
+    href="https://code.visualstudio.com/"
+    target="_blank"
+  />
+  <LinkCard
+    title="Windows Terminal"
+    description="Terminal moderno da Microsoft com abas, perfis e suporte a GPU — docs e instalação."
+    href="https://aka.ms/terminal"
+    target="_blank"
+  />
+  <LinkCard
+    title="Nushell"
+    description="Shell estruturado com saída tipada — documentação, livro oficial e plugins."
+    href="https://www.nushell.sh/"
+    target="_blank"
+  />
+  <LinkCard
+    title="Starship"
+    description="Prompt minimalista e rápido para qualquer shell — instalação e referência de configuração."
+    href="https://starship.rs/"
+    target="_blank"
+  />
+</CardGrid>
 
 ---
 
@@ -25,12 +82,20 @@ Sites interessantes salvos para referência futura.
     target="_blank"
   />
   <LinkCard
+    title="AI Templates"
+    description="1000+ templates, agentes, comandos, skills e integrações MCP para Claude Code."
+    href="https://app.aitmpl.com/"
+    target="_blank"
+  />
+  <LinkCard
     title="Higgsfield AI"
-    description="Plataforma de IA generativa para criação de conteúdo e automação."
+    description="Plataforma de IA generativa para criação de vídeos e conteúdo visual."
     href="https://higgsfield.ai/"
     target="_blank"
   />
 </CardGrid>
+
+---
 
 ## Design & Prompts
 
@@ -43,6 +108,8 @@ Sites interessantes salvos para referência futura.
   />
 </CardGrid>
 
+---
+
 ## Testes & QA
 
 <CardGrid>
@@ -54,6 +121,8 @@ Sites interessantes salvos para referência futura.
   />
 </CardGrid>
 
+---
+
 ## No-Code & Ferramentas
 
 <CardGrid>
@@ -61,12 +130,6 @@ Sites interessantes salvos para referência futura.
     title="Top Skills NoCode StartUp"
     description="Habilidades e recursos no-code essenciais para startups — construído com Lovable."
     href="https://skills-nocode-startup.lovable.app/"
-    target="_blank"
-  />
-  <LinkCard
-    title="AI Templates"
-    description="1000+ templates, agentes, comandos, skills e integrações MCP para Claude Code."
-    href="https://app.aitmpl.com/"
     target="_blank"
   />
 </CardGrid>

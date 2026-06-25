@@ -1,0 +1,167 @@
+---
+title: Modo Cowork
+description: Como configurar o Claude Code como um colega de trabalho autônomo — PRD-first, fila de tarefas e construtor noturno.
+sidebar:
+  order: 6
+---
+
+import { Steps, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+**Cowork** é o nome dado ao modelo de uso do Claude Code em que ele age como um _colega de trabalho_: recebe projetos, questiona o que está impreciso, executa de forma autônoma e devolve o resultado — incluindo enquanto você dorme.
+
+A estrutura abaixo é inspirada no sistema descrito por [Tina Huang no YouTube](https://www.youtube.com/watch?v=gdrPkpXuNks) (vídeo em inglês, 2026-05-18), com complementos do artigo companion em [lonelyoctopus.com](https://resource.lonelyoctopus.com/doc/ce409140-9c5c-4923-a739-871048b339eb/).
+
+---
+
+## Por que "cowork"?
+
+A diferença entre usar o Claude Code como ferramenta e como colega é a disciplina de processo. O colega sabe o que fazer sem ser microgerenciado — porque as regras foram escritas com antecedência.
+
+O sistema se constrói em camadas:
+
+<CardGrid>
+  <Card title="1. Operating instructions" icon="document">
+    Regras que valem para todo projeto: PRD obrigatório, pushback, nota de tudo, confirmação antes de ações irreversíveis.
+  </Card>
+  <Card title="2. Fundação de dados" icon="database">
+    Pipelines e integrações (calendário, e-mail, finanças) — a "água do lago" sobre a qual os projetos flutuam.
+  </Card>
+  <Card title="3. Projetos" icon="puzzle">
+    Dashboards, briefs, scripts — transformações sobre os dados da fundação.
+  </Card>
+  <Card title="4. Construtor autônomo" icon="rocket">
+    PRDs aprovados viram fila; um agente executa sozinho em segundo plano (ou numa VPS).
+  </Card>
+</CardGrid>
+
+---
+
+## PRD-first: a regra mais importante
+
+Antes de construir qualquer coisa, o agente deve escrever um **PRD** (Product Requirements Document) com problema, critérios de sucesso, escopo e plano — e só executar após aprovação explícita.
+
+> "30 minutos depois ele construiu algo que não era o que eu queria." — Tina Huang
+
+Quando agentes são rápidos, o gargalo deixa de ser a construção e passa a ser a especificação. O PRD resolve isso.
+
+<Aside type="tip" title="PRD mínimo">
+Um PRD não precisa ser um documento longo. O essencial: **problema**, **o que está fora do escopo**, **critérios de sucesso** e **próximos passos** numerados. O agente preenche o rascunho; você aprova ou ajusta.
+</Aside>
+
+---
+
+## Configurando as operating instructions
+
+As operating instructions ficam no `CLAUDE.md` do projeto (ou no global `~/.claude/CLAUDE.md` para regras universais). As quatro seções do modelo Cowork:
+
+```markdown
+# Operating Instructions
+
+## 1. PRD first, always
+Nunca construa nada sem um PRD aprovado explicitamente.
+Escreva o PRD, tire todas as dúvidas abertas e aguarde "aprovado" antes de iniciar.
+
+## 2. Pushback obrigatório
+Se o plano parece errado, diga. Aponte trade-offs.
+Interromper com uma pergunta é sempre mais barato que destruir algo em silêncio.
+
+## 3. Note-taking agressivo
+Documente decisões, surpresas e bloqueios em tempo real.
+Prefira arquivos markdown versionados.
+
+## 4. Reversibilidade
+Confirme antes de qualquer ação difícil de reverter
+(deletar arquivos, reescrever schema, push para produção).
+```
+
+---
+
+## Fluxo PRD → fila → execução
+
+<Steps>
+1. **Escreva o PRD** — peça ao Claude para rascunhar o documento com base na sua ideia. Revise e escreva "aprovado" quando estiver satisfeito.
+
+2. **Mova para `pending/`** — salve o PRD aprovado numa pasta `pending/` dentro do seu vault ou repositório de tarefas.
+
+3. **Construtor verifica a fila** — um agente agendado (cron, task do Claude Code Routines, ou script na VPS) lê `pending/`, pega o próximo PRD e inicia a execução.
+
+4. **Rastreamento de estado** — o PRD é movido para `in-progress/` ao iniciar e para `done/` (ou `failed/` com log de erro) ao terminar.
+
+5. **Revise o resultado** — você acorda com o software pronto e revisa o diff antes de mergear.
+</Steps>
+
+### Exemplo de sessão
+
+```ansi title="✻ Claude Code"
+> Quero um script que leia minha pasta de downloads e mova arquivos com mais de 30 dias para um arquivo ZIP datado.
+
+✻ Antes de começar, vou rascunhar o PRD para alinharmos o escopo.
+
+---
+**PRD — Arquivador de Downloads**
+
+**Problema:** Pasta de downloads acumula arquivos antigos, dificultando a navegação.
+
+**Critério de sucesso:** Script move arquivos com mtime > 30 dias para `~/Downloads/archive/YYYY-MM.zip` sem perda de dados.
+
+**Fora do escopo:** subpastas, arquivos em uso, execução automática (por ora).
+
+**Dúvidas abertas:**
+1. Arquivos `.tmp` e `.part` devem ser ignorados?
+2. O ZIP deve sobrescrever ou acumular se já existir para o mês?
+
+Aguardo aprovação e resposta às dúvidas antes de escrever o código.
+
+> 1. Sim, ignore .tmp e .part. 2. Acumule. Aprovado.
+
+✻ PRD aprovado. Iniciando implementação...
+```
+
+---
+
+## Skills de produtividade
+
+Skills são comandos sob demanda que encapsulam workflows recorrentes. Tina Huang descreve três como exemplos de referência:
+
+| Skill | O que faz |
+|---|---|
+| `today` | Brief matinal: agenda, prioridades, pendências |
+| `research` | Deep-dive em um ativo, empresa ou tema |
+| `prep` | Contexto de reunião: quem vai, histórico, pontos-chave |
+
+Para criar e usar skills no Claude Code, veja a página [Skills e Automações](/claude-code/pasta-claude/).
+
+---
+
+## Memória em três camadas
+
+Com uso intenso, o sistema de memória pode inchar (_memory bloat_) — mais arquivos não equivale a mais inteligência. A arquitetura recomendada:
+
+1. **`CLAUDE.md` raiz** — regras globais e identidade do agente
+2. **Memória por domínio** — um `CLAUDE.md` por pasta de projeto com contexto específico
+3. **"Voz" por pasta** — tom, convenções e exemplos locais para cada tipo de conteúdo
+
+Revise e pode o conteúdo das memórias periodicamente, assim como se faz com qualquer base de conhecimento.
+
+<Aside type="caution" title="Um sistema sólido em dois domínios">
+Construir um sistema raso em cinco áreas produz mais atrito que manter um sistema robusto em dois. Escolha os domínios que mais impactam seu trabalho antes de expandir.
+</Aside>
+
+---
+
+## Construtor autônomo (avançado)
+
+Para execução sem depender do laptop, o agente pode rodar em uma VPS com acesso ao repositório de PRDs:
+
+- Um cron job (ou Routine do Claude Code) verifica `pending/` em intervalos regulares
+- O agente lê o PRD, executa, gera logs e move o arquivo de estado
+- Você recebe uma notificação (e-mail, Slack, webhook) quando um item termina
+
+O deploy dessa infraestrutura foge ao escopo desta página — o ponto importante é que a **disciplina de processo** (PRD aprovado, estados explícitos, logs) é o que torna a automação confiável, não a tecnologia em si.
+
+---
+
+## Referências
+
+- Tina Huang — [My Full Claude Cowork Setup](https://www.youtube.com/watch?v=gdrPkpXuNks) (YouTube, maio 2026)
+- Artigo companion — [lonelyoctopus.com](https://resource.lonelyoctopus.com/doc/ce409140-9c5c-4923-a739-871048b339eb/)

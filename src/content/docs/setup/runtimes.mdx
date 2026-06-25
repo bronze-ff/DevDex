@@ -1,0 +1,327 @@
+---
+title: Runtimes & gerenciadores
+description: Instalar winget/scoop, Node.js, Python + uv e Git em uma máquina Windows nova — comandos prontos para copiar.
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Ponto de partida para qualquer máquina Windows nova: gerenciador de pacotes, runtimes e Git.
+Execute cada bloco em um **PowerShell elevado** (Executar como administrador) salvo onde indicado.
+
+---
+
+## winget ou Scoop?
+
+O **winget** já vem no Windows 11 e instala a maioria das ferramentas de desenvolvimento. O **Scoop** é uma alternativa que instala tudo no diretório do usuário (sem precisar de admin) e mantém versões isoladas.
+
+<Tabs>
+  <TabItem label="winget (padrão)">
+    Verifique se o winget está disponível:
+
+    ```powershell
+    winget --version
+    ```
+
+    Se o comando não for reconhecido, instale o [App Installer](https://apps.microsoft.com/detail/9nblggh4nns1) pela Microsoft Store ou atualize o Windows.
+
+    <Aside type="tip">
+      No Windows 11 atualizado o winget já está presente. Se aparecer uma versão `≥ 1.4`, está pronto.
+    </Aside>
+  </TabItem>
+  <TabItem label="Scoop (alternativa)">
+    <Steps>
+    1. Abra um **PowerShell normal** (sem admin) e habilite a política de execução de scripts para o usuário atual:
+
+       ```powershell
+       Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+       ```
+
+    2. Instale o Scoop:
+
+       ```powershell
+       Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+       ```
+
+    3. Verifique:
+
+       ```powershell
+       scoop --version
+       ```
+    </Steps>
+
+    <Aside type="note">
+      O Scoop instala tudo em `%USERPROFILE%\scoop` sem precisar de direitos de administrador. Ideal se você não tem admin na máquina.
+    </Aside>
+  </TabItem>
+</Tabs>
+
+---
+
+## Git
+
+<Tabs>
+  <TabItem label="winget">
+    <Steps>
+    1. Instale o Git:
+
+       ```powershell
+       winget install --id Git.Git -e --source winget
+       ```
+
+    2. Feche e reabra o terminal, depois verifique:
+
+       ```powershell
+       git --version
+       ```
+
+       Saída esperada: `git version 2.x.x.windows.x`
+
+    3. Configure sua identidade (obrigatório para commits):
+
+       ```bash
+       git config --global user.name "Seu Nome"
+       git config --global user.email "seu@email.com"
+       ```
+    </Steps>
+  </TabItem>
+  <TabItem label="Scoop">
+    <Steps>
+    1. Instale o Git:
+
+       ```powershell
+       scoop install git
+       ```
+
+    2. Verifique:
+
+       ```powershell
+       git --version
+       ```
+
+    3. Configure sua identidade:
+
+       ```bash
+       git config --global user.name "Seu Nome"
+       git config --global user.email "seu@email.com"
+       ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+---
+
+## Node.js
+
+A forma recomendada é instalar via **winget** (ou Scoop) e depois usar o **nvm-windows** ou o **fnm** para gerenciar versões. Para a maioria dos casos, instalar a versão LTS diretamente é suficiente.
+
+<Tabs>
+  <TabItem label="winget — LTS direto">
+    <Steps>
+    1. Instale a versão LTS do Node.js:
+
+       ```powershell
+       winget install --id OpenJS.NodeJS.LTS -e --source winget
+       ```
+
+    2. Feche e reabra o terminal, depois verifique:
+
+       ```powershell
+       node --version
+       npm --version
+       ```
+
+       Saída esperada: `v22.x.x` (ou a LTS atual) e `10.x.x`.
+    </Steps>
+  </TabItem>
+  <TabItem label="fnm (gerenciador de versões)">
+    O **fnm** (Fast Node Manager) permite alternar entre versões do Node por projeto via `.node-version` ou `.nvmrc`.
+
+    <Steps>
+    1. Instale o fnm:
+
+       ```powershell
+       winget install Schniz.fnm
+       ```
+
+    2. Adicione o hook de inicialização ao seu perfil do PowerShell. Abra o perfil com:
+
+       ```powershell
+       notepad $PROFILE
+       ```
+
+       E adicione ao final:
+
+       ```powershell
+       fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+       ```
+
+    3. Reabra o terminal e instale a versão LTS:
+
+       ```powershell
+       fnm install --lts
+       fnm use lts-latest
+       ```
+
+    4. Verifique:
+
+       ```powershell
+       node --version
+       npm --version
+       ```
+    </Steps>
+
+    <Aside type="tip">
+      Com o fnm você pode ter `node 18` em um projeto e `node 22` em outro. Basta criar um arquivo `.node-version` na raiz de cada projeto.
+    </Aside>
+  </TabItem>
+  <TabItem label="Scoop">
+    <Steps>
+    1. Instale o Node.js LTS:
+
+       ```powershell
+       scoop install nodejs-lts
+       ```
+
+    2. Verifique:
+
+       ```powershell
+       node --version
+       npm --version
+       ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+---
+
+## Python + uv
+
+O **uv** é um gerenciador de pacotes e ambientes virtuais para Python escrito em Rust — substitui `pip`, `venv`, `pipx` e `pyenv` com um único binário, e é significativamente mais rápido. Instale o uv primeiro; ele cuida do Python.
+
+<Tabs>
+  <TabItem label="uv (recomendado)">
+    <Steps>
+    1. Instale o uv via PowerShell (não precisa de admin):
+
+       ```powershell
+       powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+       ```
+
+    2. Feche e reabra o terminal, depois verifique:
+
+       ```powershell
+       uv --version
+       ```
+
+    3. Instale a versão mais recente do Python gerenciada pelo uv:
+
+       ```powershell
+       uv python install
+       ```
+
+       Para uma versão específica:
+
+       ```powershell
+       uv python install 3.12
+       ```
+
+    4. Verifique o Python:
+
+       ```powershell
+       uv run python --version
+       ```
+
+       Saída esperada: `Python 3.12.x` (ou a versão instalada).
+    </Steps>
+
+    <Aside type="tip">
+      O `uv run python` usa o Python gerenciado pelo uv. Se quiser o Python disponível globalmente no PATH, use `uv python pin` no diretório desejado ou configure o `PATH` manualmente.
+    </Aside>
+  </TabItem>
+  <TabItem label="winget — Python direto">
+    <Steps>
+    1. Instale o Python:
+
+       ```powershell
+       winget install --id Python.Python.3.12 -e --source winget
+       ```
+
+    2. Verifique:
+
+       ```powershell
+       python --version
+       pip --version
+       ```
+
+    3. Instale o uv via pip:
+
+       ```powershell
+       pip install uv
+       ```
+
+    4. Verifique o uv:
+
+       ```powershell
+       uv --version
+       ```
+    </Steps>
+  </TabItem>
+  <TabItem label="Scoop">
+    <Steps>
+    1. Instale o Python:
+
+       ```powershell
+       scoop install python
+       ```
+
+    2. Instale o uv:
+
+       ```powershell
+       pip install uv
+       ```
+
+    3. Verifique:
+
+       ```powershell
+       python --version
+       uv --version
+       ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+---
+
+## Verificação final
+
+Após instalar tudo, rode este bloco de uma vez para confirmar que todos os binários estão no PATH:
+
+```powershell
+git --version
+node --version
+npm --version
+uv --version
+uv run python --version
+```
+
+Saída esperada (versões variam):
+
+```
+git version 2.47.1.windows.1
+v22.13.0
+10.9.2
+uv 0.5.x
+Python 3.12.x
+```
+
+<Aside type="note">
+  Se algum comando retornar "não reconhecido", feche e reabra o terminal (ou reinicie a sessão do PowerShell) para recarregar o `PATH`. Instaladores do winget e do uv modificam as variáveis de ambiente da sessão atual apenas após reiniciar.
+</Aside>
+
+---
+
+## Próximos passos
+
+Com os runtimes no lugar, o próximo passo é instalar o Claude Code e as ferramentas de automação — veja a [página de setup completo](./index.mdx).

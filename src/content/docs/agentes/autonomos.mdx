@@ -1,0 +1,234 @@
+---
+title: Agentes autônomos
+description: Padrões de autonomia, auto-aperfeiçoamento, roteamento de modelos por custo, operação 24/7 em VPS e governança por auditoria.
+sidebar:
+  order: 3
+---
+
+import { Aside, Steps, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+
+Um agente autônomo não é só um LLM respondendo perguntas — é uma **camada de orquestração** que entrega memória persistente, ferramentas, agendamento e superfícies de conversa. O modelo (o "cérebro") vira um componente plugável; o que importa é a infra ao redor.
+
+Esta página cobre os padrões que tornam um agente operacional de verdade: como ele aprende, como escolhe o modelo certo para cada tarefa, como roda ininterruptamente e como você evita que vire um risco automatizado.
+
+---
+
+## Padrões de autonomia
+
+Harnesses de agentes modernos convergem em torno de alguns blocos fundamentais:
+
+<CardGrid>
+  <Card title="Memória persistente" icon="open-book">
+    O agente mantém contexto entre sessões — preferências, histórico de decisões, documentação gerada. Sem isso, cada conversa começa do zero.
+  </Card>
+  <Card title="Skills reutilizáveis" icon="puzzle">
+    Procedimentos recorrentes viram funções chamáveis. O agente não refaz raciocínio que já documentou.
+  </Card>
+  <Card title="Roteamento de modelos" icon="random">
+    Tarefas simples usam modelos baratos; raciocínio complexo usa modelos caros. Custo cai sem sacrificar qualidade onde importa.
+  </Card>
+  <Card title="Sub-agentes + verificação" icon="approve-check">
+    Um agente produz, outro verifica. O padrão maker-checker reduz erros em pipelines longos.
+  </Card>
+</CardGrid>
+
+### O harness como camada de orquestração
+
+A distinção que vale gravar: **Claude Code, Codex e similares são motores** (LLMs com ferramentas). Um harness é a camada acima — ele decide *qual* motor usar, *quando* invocar cada skill, *onde* persistir memória e *como* expor o agente (Telegram, Slack, API, etc.).
+
+Você pode trocar o motor sem refazer a infra. É o que a metáfora "você é dono do agente, aluga o cérebro" tenta capturar.
+
+---
+
+## Auto-aperfeiçoamento: o que é real
+
+O marketing vende "agentes que aprendem sozinhos". A realidade é mais específica — e mais útil quando entendida corretamente.
+
+<Aside type="caution" label="Hype vs. realidade">
+Auto-aperfeiçoamento em harnesses **não é fine-tuning do modelo**. Os pesos do LLM não mudam. O que evolui é o acervo ao redor: skills documentadas, memória atualizada, padrões capturados. Isso é valioso — mas é diferente de treinar um modelo.
+</Aside>
+
+O que realmente acontece em três camadas:
+
+<Steps>
+1. **Memória persistente** — O agente registra preferências, decisões e contexto. Na próxima sessão, ele "lembra" o que o usuário já explicou.
+
+2. **Captura de padrões em skills** — Quando uma sequência de passos funciona bem, ela pode ser documentada como uma skill reutilizável. O agente não refaz o raciocínio; chama a skill.
+
+3. **Revisão periódica (humano ou agente auditor)** — Skills geradas automaticamente e memória acumulada precisam de poda. Sem manutenção, o acervo incha e vira ruído.
+</Steps>
+
+A camada 3 — ajuste do modelo base — é mencionada em algumas ferramentas, mas raramente implementada. Não espere isso de um setup padrão.
+
+---
+
+## Roteamento de modelos
+
+Usar um único modelo poderoso para tudo é simples, mas caro. Roteamento é a prática de **atribuir o modelo certo para cada tipo de tarefa**.
+
+### O princípio
+
+```
+tarefa simples  →  modelo leve / gratuito
+tarefa complexa →  modelo poderoso (pago)
+verificação     →  modelo confiável (pode ser intermediário)
+```
+
+O que importa é **performance por token**, não capacidade bruta. Um modelo de raciocínio avançado desperdiçado em reformatar JSON é custo sem retorno.
+
+### Agregadores que viabilizam o roteamento
+
+- **[OpenRouter](https://openrouter.ai/)** — API unificada para dezenas de modelos; facilita trocar sem mudar código.
+- **[NVIDIA Build](https://build.nvidia.com/)** — Acesso a modelos open-source com tier gratuito generoso.
+
+<Aside type="tip">
+Com OpenRouter, você centraliza billing e muda o modelo por chamada via parâmetro. Útil para testar qual nível de modelo resolve cada categoria de tarefa antes de fixar a config.
+</Aside>
+
+### Exemplo de configuração por perfil
+
+<Tabs>
+  <TabItem label="Tarefas simples">
+    Resumo de e-mails, reformatação de dados, extração de campos estruturados, triagem de mensagens.
+
+    Candidatos: modelos leves open-source (DeepSeek, Minimax, Nemotron via NVIDIA Build) ou tier gratuito do OpenRouter.
+  </TabItem>
+  <TabItem label="Raciocínio complexo">
+    Arquitetura de código, análise crítica, planejamento de múltiplos passos, debugging não óbvio.
+
+    Candidatos: Claude Sonnet/Opus, GPT-4o, modelos de raciocínio (o1/o3). Use sob demanda, não em loop.
+  </TabItem>
+  <TabItem label="Verificação (maker-checker)">
+    Checar output do agente produtor: consistência, segurança, qualidade.
+
+    Um modelo intermediário costuma ser suficiente. O custo do verificador deve ser menor que o custo de um erro não detectado.
+  </TabItem>
+</Tabs>
+
+---
+
+## Rodar 24/7 numa VPS
+
+O gargalo mais comum de agentes locais: **o processo morre quando o PC suspende ou reinicia**. Uma VPS resolve isso com energia e internet garantidas no data center.
+
+### Quando faz sentido
+
+- O agente precisa responder a eventos externos (mensagens no Telegram, webhooks, crons noturnos).
+- Você quer acessar o agente de qualquer dispositivo.
+- O processo precisa rodar em paralelo enquanto você trabalha em outra coisa.
+
+### Quando *não* faz sentido
+
+Rodar local tem uma vantagem real: **as credenciais nunca saem da sua máquina**. Para um assistente pessoal que acessa contas sensíveis, a VPS introduz uma superfície de ataque a mais. Avalie o trade-off antes de decidir.
+
+### Setup básico
+
+<Steps>
+1. **Escolha a VPS** — Hostinger e DigitalOcean são as mais citadas para agentes; uma instância de 2–4 GB de RAM é suficiente para 2–3 agentes simultâneos. Avalie custo mensal vs. annual.
+
+2. **Containerize o agente** — Docker garante que o ambiente é reproduzível e que perfis diferentes ficam isolados.
+
+3. **Configure reinicialização automática** — `restart: unless-stopped` no Docker Compose (ou equivalente no seu orquestrador) garante que o agente volta após um reboot da VPS.
+
+4. **Exponha apenas o necessário** — Não abra portas que não precisam ser abertas. Use proxy reverso (Caddy, Nginx) com HTTPS para qualquer endpoint público.
+
+5. **Configure monitoramento** — Um cron simples que pinga o agente e notifica se ele não responder evita que você fique horas sem perceber que o processo morreu.
+</Steps>
+
+```bash title="docker-compose básico para agente"
+# docker-compose.yml (estrutura mínima)
+services:
+  agent:
+    image: seu-agente:latest
+    restart: unless-stopped
+    env_file: .env          # chaves fora do repositório
+    ports:
+      - "127.0.0.1:3000:3000"   # só loopback; proxy reverso na frente
+    volumes:
+      - agent_memory:/data/memory
+
+volumes:
+  agent_memory:
+```
+
+### Pipeline de deploy
+
+Um fluxo estável para atualizar o agente sem downtime manual:
+
+```ansi title="✻ Claude Code"
+> qual o fluxo para atualizar o agente na VPS sem derrubar o serviço?
+
+✻ O padrão que funciona bem:
+
+  1. Push para o repositório (GitHub/GitLab)
+  2. CI/CD (GitHub Actions ou similar) constrói a imagem Docker
+  3. Webhook ou pull periódico na VPS puxa a nova imagem
+  4. `docker compose up -d --no-deps agent` substitui o container sem parar os outros serviços
+
+  Para zero-downtime de verdade você precisaria de pelo menos 2 réplicas + load balancer,
+  mas para a maioria dos casos pessoais/pequenos o downtime de segundos na substituição é aceitável.
+```
+
+---
+
+## Auditoria e governança
+
+Autonomia sem supervisão é risco automatizado. Quanto mais um agente age sozinho, mais você precisa de mecanismos para inspecionar o que ele fez.
+
+<Aside type="danger" label="Princípio fundamental">
+**Autonomia sem governança é risco automatizado.** Um agente com acesso a APIs, sistemas de arquivos e contas pode causar danos em escala e velocidade que um humano não conseguiria. A governança não é opcional — é o que torna a autonomia sustentável.
+</Aside>
+
+### O que auditar
+
+<CardGrid>
+  <Card title="Qualidade do output" icon="magnifier">
+    Um agente auditor revisa o que o agente produtor gerou: consistência, erros, regressões. Cruzar dois modelos diferentes na auditoria reduz pontos cegos.
+  </Card>
+  <Card title="Saúde da memória" icon="bars">
+    Memória que cresce sem controle vira ruído. Uma poda periódica (mensal, por exemplo) remove entradas defasadas, contraditórias ou irrelevantes.
+  </Card>
+  <Card title="Skills auto-geradas" icon="approve-check-circle">
+    Skills capturadas automaticamente precisam de revisão humana antes de ganhar confiança total. Uma skill mal documentada pode propagar um padrão errado.
+  </Card>
+  <Card title="Cotas e custos" icon="information">
+    Modelos auxiliares têm limites. Monitore uso de tokens e alertas de cota — um loop sem gate pode consumir o budget rapidamente.
+  </Card>
+</CardGrid>
+
+### Isolamento como primeira linha de defesa
+
+Antes mesmo de auditar o que o agente fez, limite o que ele *pode* fazer:
+
+- **Chaves read-only** onde leitura é suficiente — nunca dê permissão de escrita desnecessária.
+- **Perfis isolados** por função — um agente de triagem de e-mails não precisa ter acesso ao código-fonte.
+- **VPS/Docker com rede restrita** — containers sem acesso a serviços internos que não precisam.
+- **Prompt injection** é risco real em assistentes que processam input externo (e-mails, mensagens). Sanitize e valide o que chega de fora.
+
+### Padrão maker-checker aplicado à auditoria
+
+```
+Agente produtor  →  gera output
+       ↓
+Agente verificador  →  audita qualidade / segurança
+       ↓
+Gate humano (ou automático com threshold)  →  aprova ou rejeita
+       ↓
+Memória / skill atualizada  →  apenas se aprovado
+```
+
+O verificador não precisa ser o modelo mais caro — precisa ser confiável e ter critérios claros (um prompt de auditoria bem definido vale mais que um modelo maior com prompt vago).
+
+---
+
+## Resumo dos trade-offs
+
+| Decisão | Opção A | Opção B |
+|---|---|---|
+| Onde rodar | VPS (24/7, acessível de qualquer lugar) | Local (credenciais protegidas, sem custo de infra) |
+| Modelo | Único modelo poderoso (simples de configurar) | Roteamento por tarefa (mais barato, mais complexo) |
+| Memória | Crescimento livre (baixa manutenção) | Poda periódica (mais trabalho, mais qualidade) |
+| Skills | Captura automática (cobre mais casos) | Revisão manual antes de ativar (mais controle) |
+| Verificação | Agente único confia no próprio output | Maker-checker (mais robusto, mais custo) |
+
+Não existe configuração certa para todos os casos. O que existe é entender cada trade-off e decidir conscientemente.
