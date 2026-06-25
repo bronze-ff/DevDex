@@ -101,3 +101,44 @@ summary .large {
 .sl-markdown-content .card {
   border-radius: 4px;
 }
+
+/* =============================================================
+   Fundo animado — campo de pixels à deriva (vibe retro/game)
+   Sutil, atrás de tudo, não atrapalha a leitura.
+   ============================================================= */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--sl-color-accent) 1px, transparent 1.6px);
+  background-size: 24px 24px;
+  opacity: 0.06;
+  animation: ddx-drift 60s linear infinite;
+}
+@keyframes ddx-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 240px 480px; }
+}
+/* mantém o conteúdo acima do fundo */
+.page, header, .sidebar, main, footer { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
+/* =============================================================
+   Checklist interativo (task lists viram clicáveis + persistem)
+   ============================================================= */
+.sl-markdown-content input[type='checkbox'] {
+  accent-color: var(--sl-color-accent);
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.4rem;
+  vertical-align: -2px;
+}
+.sl-markdown-content li.ddx-done {
+  opacity: 0.5;
+  text-decoration: line-through;
+  text-decoration-color: var(--sl-color-accent);
+}

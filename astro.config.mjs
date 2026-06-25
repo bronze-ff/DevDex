@@ -24,6 +24,9 @@ export default defineConfig({
       pagefind: true,
       editLink: { baseUrl: 'https://github.com/bronze-ff/DevDex/edit/master/' },
       lastUpdated: true,
+      head: [
+        { tag: 'script', attrs: { src: '/scripts/devdex.js', defer: true } },
+      ],
       sidebar: [
         {
           label: '🖥️ Máquina Nova',
