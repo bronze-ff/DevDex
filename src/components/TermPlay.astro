@@ -1,0 +1,45 @@
+---
+// TermPlay.astro — "playback" animado de uma sessão de terminal (visual; não executa).
+// Dados nos presets (sem children MDX) -> robusto. Uso: <TermPlay preset="nushell" />
+interface Props {
+  preset?: string;
+  title?: string;
+}
+const { preset = 'nushell', title = '~' } = Astro.props;
+
+const PRESETS: Record<string, { t: 'cmd' | 'out'; s: string }[]> = {
+  nushell: [
+    { t: 'cmd', s: 'nu --version' },
+    { t: 'out', s: '0.112.1' },
+    { t: 'cmd', s: 'z projetos' },
+    { t: 'out', s: '~/dev/projetos' },
+    { t: 'cmd', s: 'ls | where size > 1mb | sort-by modified' },
+    { t: 'out', s: '─ assets/   2.3 MB   2h atrás' },
+  ],
+  git: [
+    { t: 'cmd', s: 'git switch -c feat/nova' },
+    { t: 'out', s: "Switched to a new branch 'feat/nova'" },
+    { t: 'cmd', s: 'git add . ; git commit -m "feat: algo novo"' },
+    { t: 'out', s: '[feat/nova 9f2a1c3] feat: algo novo' },
+  ],
+  setup: [
+    { t: 'cmd', s: 'winget install Git.Git OpenJS.NodeJS.LTS' },
+    { t: 'out', s: 'Found Git [Git.Git]  -  instalando...' },
+    { t: 'out', s: 'Successfully installed' },
+    { t: 'cmd', s: 'node --version ; git --version' },
+    { t: 'out', s: 'v24.14.1' },
+    { t: 'out', s: 'git version 2.47.0' },
+  ],
+};
+const session = PRESETS[preset] || PRESETS.nushell;
+const data = JSON.stringify(session);
+---
+
+<div class="ddx-play" data-ddx-play data-session={data}>
+  <div class="ddx-play__bar">
+    <span class="ddx-play__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="ddx-play__title">{title}</span>
+    <button class="ddx-play__replay" type="button" aria-label="Repetir a animação" title="Repetir">↻</button>
+  </div>
+  <pre class="ddx-play__body"><code></code></pre>
+</div>
