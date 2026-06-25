@@ -34,9 +34,10 @@ claude "Explique a diferença entre Promise.all e Promise.allSettled"
 
 **Quando usar:** pares de trabalho em tempo real — você edita, o Claude acompanha e sugere.
 
-- Integra ao editor via extensão ou terminal com `--cowork`
-- O agente observa o arquivo ativo e oferece sugestões contextuais
+- **Cowork é um modo** da interface do Claude (ao lado de Chat e Code) — você alterna para ele pela própria interface, não por uma flag de CLI
+- O agente observa o contexto ativo e oferece sugestões contextuais
 - Bom para refatoração progressiva, pair-review de PRs e debugging interativo
+- Veja a página dedicada: [Cowork](/claude-code/cowork/)
 
 <Aside type="tip">
 No modo Cowork, mantenha o `CLAUDE.md` atualizado com as convenções do projeto — ele é injetado em cada sessão e reduz o tempo gasto realinhando o agente.
@@ -146,7 +147,7 @@ O repositório atua como memória compartilhada — cada agente lê o estado mai
 
 <CardGrid>
 <Card title="Planeje antes de automatizar" icon="pencil">
-Desenhe o fluxo em linguagem natural antes de escrever código ou prompt. Use `/plan` no Claude Code para validar a abordagem.
+Desenhe o fluxo em linguagem natural antes de escrever código ou prompt. Skills como `brainstorming` e `writing-plans` ajudam a validar a abordagem antes de executar.
 </Card>
 <Card title="Leve o contexto certo" icon="document">
 Coloque a documentação relevante no prompt, não apenas o pedido. Um prompt com contexto é mais confiável que um prompt genérico.
@@ -167,7 +168,11 @@ Skills são prompts reutilizáveis que o Claude executa sob demanda — funciona
 
 <Steps>
 
-1. **Instale ou crie** com `npx skills add <skill>` ou salvando um arquivo em `.claude/skills/`.
+1. **Crie ou instale** uma skill. Há três formas:
+
+   - **Método principal — pasta `SKILL.md`**: crie uma pasta com `SKILL.md` dentro de `.claude/skills/` (escopo de projeto) ou `~/.claude/skills/` (escopo de usuário). Veja o guia completo em [Criar Skills](/claude-code/criar-skills/).
+   - **Plugins do marketplace**: use `/plugin marketplace add ...` ou `/plugin install ...` para instalar skills publicadas.
+   - **Instalador da comunidade** (quando disponível): `npx skills add <fonte>` — ex.: `npx skills add supabase/agent-skills`.
 
 2. **Acione pelo nome** no prompt: `/nome-da-skill` dispara a skill correspondente.
 

@@ -26,7 +26,7 @@ Na maioria das interações com IA, você prompta → o modelo responde → fim.
 A virada conceitual é sair do *prompt isolado* para a **arquitetura do sistema**: quem dispara, quem verifica, onde fica o estado, quando parar.
 
 > "Você não deveria mais promptar agentes; deveria projetar loops que promptam seus agentes."
-> — atribuído a [Addy Osmani](https://addyosmani.com/)
+> — Peter Steinberger, citado por [Addy Osmani](https://addyosmani.com/blog/loop-engineering/)
 
 ---
 
@@ -138,17 +138,14 @@ O Claude Code tem comandos nativos para cada forma de disparo:
 # Loop dentro da sessão (repete enquanto a sessão está aberta)
 /loop "rode os testes e corrija falhas até tudo passar"
 
-# Loop por condição de parada
-/goal "todos os testes em test/auth devem passar"
-
 # Routines — trabalho recorrente que sobrevive ao notebook fechado
 # (configurado via interface da Anthropic ou API; roda na infra deles)
 ```
 
 A distinção importante:
 
-- `/loop` — repete um prompt enquanto a **sessão está viva**.
-- `/goal` — roda por **condição**, não por horário; um modelo separado verifica a cada turno se a condição foi satisfeita.
+- `/loop` — skill real do Claude Code; repete um prompt enquanto a **sessão está viva**.
+- **Goal / condição de parada** — padrão em que um modelo separado verifica a cada turno se a condição foi satisfeita; a forma exata de invocar varia entre ferramentas e versões (não é uma skill universal padronizada — verifique a documentação da versão em uso).
 - **Routines** — trabalho recorrente que **sobrevive ao notebook fechado** (roda na infra da Anthropic; gatilho por agenda, API ou evento).
 
 ---
@@ -209,9 +206,9 @@ Falta só o gatilho autônomo — mas o ciclo já existe.
 
 ---
 
-## Dynamic Workflows: loops multiagente no Claude Code
+## Loops multiagente no Claude Code
 
-O Claude Code tem um recurso chamado **Dynamic Workflows** em que a sessão principal dispara múltiplos subagentes em paralelo. Eles trabalham de forma independente — e podem revisar os resultados uns dos outros — antes de consolidar a resposta na sessão principal. É o padrão Maker-Checker aplicado em escala: vários verificadores, debate entre perspectivas, resultado consolidado.
+O Claude Code suporta um padrão — às vezes chamado de **dynamic workflows** — em que a sessão principal dispara múltiplos subagentes em paralelo. Eles trabalham de forma independente — e podem revisar os resultados uns dos outros — antes de consolidar a resposta na sessão principal. É o padrão Maker-Checker aplicado em escala: vários verificadores, debate entre perspectivas, resultado consolidado.
 
 Útil para pesquisa, análise de múltiplos arquivos em paralelo e qualquer tarefa onde uma perspectiva única seria limitante.
 
@@ -219,7 +216,7 @@ O Claude Code tem um recurso chamado **Dynamic Workflows** em que a sessão prin
 
 ## Referências
 
-- [Addy Osmani — Loop Engineering](https://addyosmani.com/) — origem da frase e do mapa das peças de um loop
-- [DSA — Loop Engineering](https://newsletter.pragmaticengineer.com/) — casos reais de custo e falhas (os números extremos são reais)
-- [Claire Vo — How I AI](https://clairevo.com/) — as quatro formas de disparo
-- [Anatoli Kopadze — Loops Explained](https://kopadze.com/) — o teste dos quatro critérios e a ordem de construção
+- [Addy Osmani — Loop Engineering](https://addyosmani.com/blog/loop-engineering/) — origem da frase e do mapa das peças de um loop
+- [DSA (Data Science Academy) — Loop Engineering](https://blog.dsacademy.com.br/loop-engineering-como-projetar-agentes-de-ia-que-entregam-codigo-sozinhos/) — casos reais de custo e falhas (os números extremos são reais)
+- [Claire Vo — How I AI (YouTube)](https://www.youtube.com/watch?v=JoXbk2fm7jM) — as quatro formas de disparo
+- [Anatoli Kopadze — Loops Explained (X/Twitter)](https://x.com/AnatoliKopadze/status/2068328135611822149) — o teste dos quatro critérios e a ordem de construção

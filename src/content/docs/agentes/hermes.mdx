@@ -49,25 +49,8 @@ A própria comunidade admite que "funcionalidade é commodity" — a escolha ent
 
 2. **Baixar e rodar o instalador**
 
-   <Tabs>
-   <TabItem label="Windows (PowerShell)">
-
-   ```powershell
-   iex (irm https://hermes-agent.nousresearch.com/install.ps1)
-   ```
-
-   </TabItem>
-   <TabItem label="Linux / macOS / WSL2">
-
-   ```bash
-   curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
-   ```
-
-   </TabItem>
-   </Tabs>
-
-   <Aside type="note">
-   Verifique o endereço exato do instalador no site oficial antes de rodar — URLs de scripts de instalação mudam entre versões. As fontes citam `hermes-agent.nousresearch.com`, mas confirme antes de executar.
+   <Aside type="caution">
+   O domínio `hermes-agent.nousresearch.com` citado nos tutoriais **não foi verificado como URL oficial**. Antes de rodar qualquer script de instalação, consulte os tutoriais creditados nas [Fontes](#fontes) abaixo ou a documentação oficial da Nous Research — `[URL a confirmar na fonte oficial]`. Não execute scripts de instalação de fontes não verificadas.
    </Aside>
 
 3. **Escolher o modo de setup**
@@ -115,10 +98,10 @@ A própria comunidade admite que "funcionalidade é commodity" — a escolha ent
 </Steps>
 
 <Aside type="tip">
-Se o pacote de mensageria falhar no setup, instale manualmente:
+Se o pacote de mensageria falhar no setup, os tutoriais citam o comando abaixo (a confirmar na fonte oficial antes de executar):
 
 ```bash
-pip install "hermes-agent[messaging]"
+pip install "hermes-agent[messaging]"  # a confirmar
 ```
 
 O Hermes está em early beta — falhas pontuais são esperadas.
