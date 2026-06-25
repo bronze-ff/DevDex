@@ -1,0 +1,42 @@
+---
+// ClaudeSession.astro — "transcript" estilizado como uma sessão do Claude Code.
+// Uso (MDX):
+//   import ClaudeSession from '../../../components/ClaudeSession.astro';
+//   <ClaudeSession model="opus">
+//   > cria um loop que roda os testes até passar
+//   ✻ Vou rodar o loop... (resposta do Claude)
+//   </ClaudeSession>
+interface Props {
+  model?: string;
+}
+const { model = 'opus' } = Astro.props;
+---
+
+<div class="ddx-claude" data-ddx-term>
+  <div class="ddx-claude__bar">
+    <span class="ddx-claude__spark" aria-hidden="true">✻</span>
+    <span class="ddx-claude__title">Claude Code · {model}</span>
+    <button class="ddx-term__copy" type="button" aria-label="Copiar">Copiar</button>
+  </div>
+  <pre class="ddx-claude__body"><slot /></pre>
+</div>
+
+<script>
+  function wireSessions() {
+    document.querySelectorAll('[data-ddx-term]').forEach((el) => {
+      const btn = el.querySelector('.ddx-term__copy');
+      const body = el.querySelector('.ddx-claude__body, .ddx-term__body');
+      if (!btn || !body || btn.dataset.wired) return;
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText((body.textContent || '').trim());
+          const original = btn.textContent;
+          btn.textContent = 'Copiado!';
+          setTimeout(() => (btn.textContent = original), 1500);
+        } catch {}
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', wireSessions);
+</script>
