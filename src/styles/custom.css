@@ -289,27 +289,22 @@ body::before {
 }
 
 /* =============================================================
-   Pontos coloridos (vermelho/amarelo/verde) nas janelas de
-   terminal do Expressive Code — os padrões foram escondidos
-   via config (terminalTitlebarDotsForeground: transparent).
+   Pontos do terminal (Expressive Code) em vermelho/amarelo/verde.
+   O EC desenha 3 pontos com uma máscara SVG preenchida por UMA
+   cor (--ec-frm-trmTtbDotsFg). Trocamos esse preenchimento por um
+   gradiente de 3 faixas — a máscara recorta 3 pontos, cada um
+   pegando uma cor. Posição/máscara originais ficam intactas, e
+   o ::after (linha da barra) do EC volta ao normal.
    ============================================================= */
-.expressive-code .frame.is-terminal .header {
-  position: relative;
-}
-.expressive-code .frame.is-terminal .header::after {
-  content: '';
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 42px;
-  height: 11px;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 5px 50%, #ff5f57 0 4.5px, transparent 5px),
-    radial-gradient(circle at 19px 50%, #febc2e 0 4.5px, transparent 5px),
-    radial-gradient(circle at 33px 50%, #28c840 0 4.5px, transparent 5px);
-  background-repeat: no-repeat;
+.expressive-code .frame.is-terminal .header::before {
+  background-color: transparent;
+  background-image: linear-gradient(
+    to right,
+    #ff5f57 0 33.333%,
+    #febc2e 33.333% 66.666%,
+    #28c840 66.666% 100%
+  );
+  opacity: 1;
 }
 
 /* =============================================================
