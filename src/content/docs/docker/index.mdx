@@ -1,6 +1,25 @@
 ---
 title: Docker
-description: Referências de Docker — containers e imagens.
+description: Overview da seção Docker — containers, instalação no Windows e referência de comandos.
+sidebar:
+  order: 1
 ---
 
-Seção em construção. Em breve: Dockerfile, docker-compose e comandos essenciais.
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Docker é uma plataforma de containerização que empacota aplicações e suas dependências em unidades isoladas e reproduzíveis. No dia a dia de desenvolvimento, resolve o clássico problema de "funciona na minha máquina" ao garantir ambientes idênticos entre desenvolvimento, CI e produção.
+
+## Nesta seção
+
+<CardGrid>
+  <LinkCard
+    title="Instalação"
+    href="/docker/install/"
+    description="Docker Desktop no Windows via WSL2 — pré-requisitos, instalação e primeiro container."
+  />
+  <LinkCard
+    title="Comandos"
+    href="/docker/comandos/"
+    description="Referência rápida: run, build, ps, logs, stop, rm, prune e Compose."
+  />
+</CardGrid>

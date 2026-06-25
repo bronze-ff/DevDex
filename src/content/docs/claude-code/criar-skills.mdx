@@ -1,0 +1,269 @@
+---
+title: Criar Skills
+description: Como criar skills no Claude Code — estrutura do SKILL.md, frontmatter, boas práticas de description para disparo automático, e a skill-creator embutida.
+sidebar:
+  order: 8
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+
+Uma skill do Claude Code é um workflow reutilizável que o Claude pode invocar automaticamente — sem que você precise digitar um slash command. Você descreve o que a skill faz, em que contextos ela se aplica, e o Claude passa a usá-la sempre que o momento for certo.
+
+Skills funcionam como um repertório de especialidades sob demanda: em vez de você repetir as mesmas instruções elaboradas a cada sessão, você as empacota uma vez e o Claude as aplica quando o contexto bate.
+
+---
+
+## O que é uma skill, exatamente?
+
+Uma skill é uma pasta com um arquivo `SKILL.md` no centro. Opcionalmente, ela pode conter arquivos de suporte — guias detalhados, templates, referências — que o `SKILL.md` pode referenciar com `@nome-do-arquivo.md`.
+
+O que torna uma skill diferente de um comando customizado é o **gatilho**: commands exigem que você os chame explicitamente via `/command`. Skills são monitoradas pelo Claude durante a conversa — quando a descrição da skill corresponde à tarefa em mãos, ele a invoca por conta própria.
+
+<Aside type="tip">
+  Pense assim: commands são atalhos manuais. Skills são comportamentos automáticos que o Claude adquire.
+</Aside>
+
+---
+
+## Anatomia de uma skill
+
+```bash
+.claude/skills/
+└── minha-skill/
+    ├── SKILL.md          ← obrigatório
+    └── GUIA_DETALHADO.md ← opcional, referenciado com @
+```
+
+O `SKILL.md` tem duas partes: um **frontmatter YAML** e um **corpo em Markdown**.
+
+```md
+---
+name: nome-da-skill
+description: Descrição que o Claude usa para decidir quando invocar esta skill.
+  Seja específico sobre contextos de ativação.
+allowed-tools: Read, Grep, Glob, Bash
+---
+
+## Corpo da skill
+
+Instruções detalhadas sobre o que fazer quando esta skill for invocada.
+
+Você pode referenciar arquivos de suporte com @GUIA_DETALHADO.md.
+```
+
+### Campos do frontmatter
+
+| Campo | Obrigatório | O que faz |
+|---|---|---|
+| `name` | Sim | Identificador interno da skill |
+| `description` | Sim | Texto que o Claude lê para decidir quando invocar |
+| `allowed-tools` | Não | Lista de ferramentas que a skill pode usar |
+
+O campo mais importante é `description`. É a única ponte entre o contexto da conversa e a decisão do Claude de usar ou não a skill.
+
+---
+
+## Como criar uma skill do zero
+
+<Steps>
+
+1. **Crie a pasta da skill**
+
+   Dentro de `.claude/skills/` (projeto) ou `~/.claude/skills/` (pessoal/global), crie um subdiretório com o nome da skill:
+
+   ```bash
+   mkdir -p .claude/skills/code-review
+   ```
+
+2. **Escreva o SKILL.md**
+
+   Crie `.claude/skills/code-review/SKILL.md` com frontmatter e corpo:
+
+   ```md
+   ---
+   name: code-review
+   description: Revisão de código focada em corretude. Use ao revisar PRs,
+     inspecionar diffs, analisar implementações antes de merge, ou quando
+     o usuário pedir revisão, feedback de código, ou checagem de qualidade.
+   allowed-tools: Read, Grep, Glob
+   ---
+
+   Revise o código fornecido buscando:
+
+   1. Bugs e edge cases não tratados
+   2. Gaps de tratamento de erro
+   3. Problemas de segurança óbvios
+   4. Violações das convenções do projeto
+
+   Seja específico: aponte linha, explique o problema, sugira a correção.
+   Não faça comentários genéricos de estilo — foque em corretude.
+   ```
+
+3. **Adicione arquivos de suporte (opcional)**
+
+   Se a skill precisa de referências detalhadas, crie arquivos ao lado e referencie com `@`:
+
+   ```md
+   Consulte @CHECKLIST.md para os critérios completos de revisão deste projeto.
+   ```
+
+4. **Teste a skill**
+
+   Inicie uma sessão do Claude Code e peça algo que deveria ativar a skill. O Claude deve invocá-la automaticamente. Se não ativar, ajuste a `description` — veja boas práticas abaixo.
+
+</Steps>
+
+---
+
+## Boas práticas de `description`
+
+A `description` é o mecanismo de disparo da skill. Se estiver vaga demais, a skill nunca ativa. Se estiver específica demais, só ativa em casos raros. O objetivo é cobrir os contextos reais sem ser genérico a ponto de ativar quando não deve.
+
+### O que funciona bem
+
+**Liste os contextos de ativação explicitamente.** Em vez de "ajuda com segurança", escreva:
+
+```yaml
+description: Auditoria de segurança. Use ao revisar código para vulnerabilidades,
+  antes de deploys em produção, ao analisar endpoints de autenticação, ou quando
+  o usuário mencionar segurança, SQL injection, XSS, ou secrets expostos.
+```
+
+**Inclua variações de linguagem natural.** O Claude não faz matching exato — ele interpreta semanticamente — mas enumerar sinônimos e contextos equivalentes reduz ambiguidade:
+
+```yaml
+description: Geração de testes unitários. Use ao criar testes, escrever specs,
+  adicionar cobertura de teste, ou quando o usuário pedir "testes para isso",
+  "cobertura", "specs", ou "TDD".
+```
+
+**Use a palavra "Use" seguida de contextos.** Esse padrão (`Use ao...`, `Use quando...`) é direto e fácil de seguir:
+
+```yaml
+description: Deploy em produção. Use ao preparar um release, fazer deploy,
+  publicar uma nova versão, ou quando o usuário mencionar "subir para prod".
+```
+
+### O que evitar
+
+<Aside type="caution">
+  **Não seja genérico demais.** Uma description como "ajuda com código" vai ativar a skill em quase todo contexto e vai competir com o comportamento padrão do Claude, gerando confusão.
+
+  **Não seja específico demais em termos técnicos obscuros.** Se você lista só nomes de funções internas do projeto, a skill nunca ativa para pedidos em linguagem natural.
+</Aside>
+
+---
+
+## Skills de projeto vs. skills pessoais
+
+<Tabs>
+  <TabItem label="Projeto (.claude/skills/)">
+    Ficam dentro do repositório, em `.claude/skills/`. São commitadas no git e compartilhadas com toda a equipe. Ideais para workflows específicos do projeto — padrões de arquitetura, checklist de deploy, convenções de revisão.
+
+    ```bash
+    .claude/
+    └── skills/
+        ├── security-review/
+        │   └── SKILL.md
+        └── release-prep/
+            ├── SKILL.md
+            └── RELEASE_TEMPLATE.md
+    ```
+  </TabItem>
+  <TabItem label="Pessoal (~/.claude/skills/)">
+    Ficam em `~/.claude/skills/` e estão disponíveis em todos os seus projetos, independente do repositório. Ideais para preferências pessoais de workflow — como você prefere fazer revisões, suas convenções de nomenclatura, seus padrões de debugging.
+
+    ```bash
+    ~/.claude/
+    └── skills/
+        └── meu-debug-workflow/
+            └── SKILL.md
+    ```
+  </TabItem>
+</Tabs>
+
+---
+
+## A skill `skill-creator`
+
+O Claude Code vem com uma skill embutida chamada `skill-creator`. Ela serve exatamente para o que o nome diz: criar novas skills.
+
+Quando você descreve um workflow que quer transformar em skill, o Claude usa o `skill-creator` para gerar a estrutura — o diretório, o `SKILL.md` com frontmatter adequado, e os arquivos de suporte necessários.
+
+Para acionar, descreva o que você quer empacotar:
+
+> "Crie uma skill para fazer análise de performance de consultas SQL no meu projeto."
+
+O Claude vai guiar a criação, sugerir a `description` correta, propor os `allowed-tools` relevantes, e escrever o corpo da skill com suas instruções.
+
+<Aside type="tip">
+  Use o `skill-creator` como ponto de partida, depois refine a `description` manualmente. A geração automática cobre a estrutura; você afina o gatilho.
+</Aside>
+
+---
+
+## Exemplo completo: skill de análise de performance
+
+```bash
+.claude/skills/perf-review/
+├── SKILL.md
+└── THRESHOLDS.md
+```
+
+**SKILL.md:**
+
+```md
+---
+name: perf-review
+description: Análise de performance de código. Use ao revisar funções com loops,
+  queries de banco, algoritmos de ordenação, ou quando o usuário mencionar
+  lentidão, gargalos, N+1, otimização, ou "isso está devagar".
+allowed-tools: Read, Grep, Glob
+---
+
+Analise o código fornecido para problemas de performance:
+
+1. Loops aninhados e complexidade algorítmica desnecessária
+2. Queries N+1 ou ausência de índices óbvios
+3. Alocações desnecessárias em hot paths
+4. Operações síncronas que poderiam ser paralelas
+
+Consulte @THRESHOLDS.md para os limites de latência aceitáveis deste projeto.
+
+Para cada problema, estime o impacto (alto/médio/baixo) e proponha uma alternativa concreta.
+```
+
+**THRESHOLDS.md:**
+
+```md
+# Thresholds de Performance
+
+- Endpoints de API: < 200ms p95
+- Queries de banco: < 50ms por query
+- Processamento batch: < 5s por job
+```
+
+---
+
+## Resumo rápido
+
+<CardGrid>
+  <Card title="Estrutura mínima" icon="document">
+    Uma pasta com `SKILL.md` contendo `name`, `description`, e o corpo com as instruções.
+  </Card>
+  <Card title="Chave do disparo" icon="magnifier">
+    A `description` é o que o Claude lê para decidir quando invocar. Seja específico sobre contextos de ativação.
+  </Card>
+  <Card title="Escopo" icon="setting">
+    Skills de projeto em `.claude/skills/`. Skills pessoais em `~/.claude/skills/`.
+  </Card>
+  <Card title="Ponto de partida" icon="rocket">
+    Use o `skill-creator` embutido para gerar a estrutura automaticamente.
+  </Card>
+</CardGrid>
+
+---
+
+## Veja também
+
+- [A Pasta .claude — Guia Completo](/claude-code/pasta-claude/) — visão geral de skills, commands, agents e settings

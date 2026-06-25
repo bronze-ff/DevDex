@@ -1,0 +1,111 @@
+---
+title: Instalação — Docker no Windows
+description: Como instalar o Docker Desktop no Windows usando WSL2 como backend, verificar a instalação e rodar o primeiro container.
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+O Docker Desktop no Windows usa o **WSL2** (Windows Subsystem for Linux 2) como engine de virtualização, substituindo a abordagem antiga baseada em Hyper-V. O resultado é inicialização mais rápida, menos overhead de memória e integração nativa com o terminal Linux.
+
+## Pré-requisitos
+
+- Windows 10 versão 2004 (build 19041) ou superior, ou Windows 11
+- WSL2 habilitado e atualizado
+- Virtualização habilitada na BIOS/UEFI (geralmente já está em máquinas modernas)
+- Pelo menos 4 GB de RAM (8 GB recomendado)
+
+<Aside type="tip">
+  Verifique se o WSL2 já está ativo rodando `wsl --status` no PowerShell. Se o kernel precisar de atualização, execute `wsl --update`.
+</Aside>
+
+## Instalação
+
+<Steps>
+
+1. **Habilitar o WSL2**
+
+   Abra o PowerShell como Administrador e execute:
+
+   ```powershell
+   wsl --install
+   ```
+
+   Se o WSL já estiver instalado, garanta que está na versão 2:
+
+   ```powershell
+   wsl --set-default-version 2
+   ```
+
+   Reinicie a máquina se solicitado.
+
+2. **Baixar o Docker Desktop**
+
+   Acesse [docs.docker.com/desktop/install/windows-install](https://docs.docker.com/desktop/install/windows-install/) e baixe o instalador `Docker Desktop Installer.exe`.
+
+3. **Executar o instalador**
+
+   Rode o instalador com as opções padrão. Na tela de configuração, confirme que a opção **"Use WSL 2 instead of Hyper-V"** está marcada.
+
+   O instalador adiciona o Docker ao PATH automaticamente.
+
+4. **Iniciar o Docker Desktop**
+
+   Abra o Docker Desktop pelo menu Iniciar. Na primeira vez, ele pode levar alguns minutos para inicializar o engine. O ícone na bandeja do sistema ficará verde quando estiver pronto.
+
+5. **Verificar a instalação**
+
+   Abra um terminal (PowerShell, CMD ou terminal WSL) e confirme as versões instaladas:
+
+   ```powershell
+   docker --version
+   docker compose version
+   ```
+
+   Saída esperada:
+
+   ```
+   Docker version 27.x.x, build xxxxxxx
+   Docker Compose version v2.x.x
+   ```
+
+6. **Rodar o primeiro container**
+
+   O container `hello-world` é o smoke test oficial do Docker:
+
+   ```powershell
+   docker run hello-world
+   ```
+
+   Se tudo estiver certo, você verá uma mensagem começando com:
+
+   ```
+   Hello from Docker!
+   This message shows that your installation appears to be working correctly.
+   ```
+
+</Steps>
+
+## Configuração recomendada
+
+Após instalar, vale ajustar dois pontos nas configurações do Docker Desktop:
+
+**Limite de memória do WSL2** — por padrão o WSL2 pode consumir até 50% da RAM do sistema. Para limitar, crie ou edite o arquivo `%USERPROFILE%\.wslconfig`:
+
+```ini
+[wsl2]
+memory=4GB
+processors=4
+```
+
+**Inicialização automática** — se não quiser que o Docker suba junto com o Windows, desmarque a opção em Docker Desktop → Settings → General → "Start Docker Desktop when you log in".
+
+<Aside type="note">
+  Em ambientes corporativos com proxy, configure as variáveis `HTTP_PROXY` e `HTTPS_PROXY` em Docker Desktop → Settings → Resources → Proxies.
+</Aside>
+
+## Referências
+
+- [Documentação oficial — Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+- [Documentação oficial — WSL2 backend](https://docs.docker.com/desktop/wsl/)

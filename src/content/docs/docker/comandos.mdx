@@ -1,0 +1,235 @@
+---
+title: Comandos Docker
+description: Referência rápida dos comandos Docker mais usados — containers, imagens, limpeza e Docker Compose.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Containers
+
+### `docker run` — criar e iniciar
+
+```bash
+# forma básica
+docker run nginx
+
+# mapeando porta (host:container) e rodando em background
+docker run -d -p 8080:80 nginx
+
+# com nome, variável de ambiente e volume montado
+docker run -d \
+  --name meu-app \
+  -e NODE_ENV=production \
+  -v $(pwd)/dados:/app/dados \
+  minha-imagem:latest
+
+# interativo com shell (útil para debug)
+docker run -it --rm ubuntu bash
+```
+
+Flags mais usadas em `run`:
+
+| Flag | Descrição |
+|------|-----------|
+| `-d` | Detached — roda em background |
+| `-p host:container` | Mapeia porta |
+| `-e CHAVE=valor` | Define variável de ambiente |
+| `-v origem:destino` | Monta volume |
+| `--name` | Nomeia o container |
+| `--rm` | Remove o container ao parar |
+| `-it` | Modo interativo com pseudo-TTY |
+
+---
+
+### `docker ps` — listar containers
+
+```bash
+# apenas containers em execução
+docker ps
+
+# todos os containers (incluindo parados)
+docker ps -a
+
+# somente os IDs
+docker ps -q
+```
+
+---
+
+### `docker logs` — ver saída do container
+
+```bash
+# saída completa
+docker logs meu-app
+
+# últimas 50 linhas
+docker logs --tail 50 meu-app
+
+# follow (equivalente a tail -f)
+docker logs -f meu-app
+```
+
+---
+
+### `docker stop` e `docker rm`
+
+```bash
+# para um container graciosamente (SIGTERM + espera)
+docker stop meu-app
+
+# força parada imediata (SIGKILL)
+docker kill meu-app
+
+# remove um container parado
+docker rm meu-app
+
+# para e remove em um passo
+docker rm -f meu-app
+```
+
+<Aside type="tip">
+  Para remover todos os containers parados de uma vez: `docker container prune`.
+</Aside>
+
+---
+
+### Outros comandos de container
+
+```bash
+# executar comando em container já rodando
+docker exec -it meu-app bash
+
+# copiar arquivo entre host e container
+docker cp arquivo.txt meu-app:/app/arquivo.txt
+docker cp meu-app:/app/log.txt ./log.txt
+
+# inspecionar metadata do container
+docker inspect meu-app
+
+# ver uso de recursos em tempo real
+docker stats
+```
+
+---
+
+## Imagens
+
+### `docker build` — construir imagem
+
+```bash
+# build com tag na pasta atual (onde está o Dockerfile)
+docker build -t minha-imagem:1.0 .
+
+# apontando para um Dockerfile específico
+docker build -f Dockerfile.prod -t minha-imagem:prod .
+
+# sem usar cache (útil quando dependências mudam)
+docker build --no-cache -t minha-imagem:latest .
+```
+
+---
+
+### Gerenciar imagens
+
+```bash
+# listar imagens locais
+docker images
+
+# baixar imagem do Docker Hub
+docker pull node:20-alpine
+
+# remover uma imagem
+docker rmi minha-imagem:1.0
+
+# remover imagens sem tag (dangling)
+docker image prune
+
+# remover todas as imagens não usadas por nenhum container
+docker image prune -a
+```
+
+---
+
+## Limpeza — `system prune`
+
+Com o tempo, Docker acumula containers parados, imagens antigas, volumes e redes não utilizados. Use `system prune` para liberar espaço:
+
+```bash
+# remove containers parados, redes e imagens dangling
+docker system prune
+
+# inclui volumes não usados (cuidado: apaga dados persistidos)
+docker system prune --volumes
+
+# sem pedir confirmação (útil em scripts)
+docker system prune -f
+
+# ver quanto espaço o Docker está usando
+docker system df
+```
+
+<Aside type="caution">
+  `system prune --volumes` remove volumes anônimos e nomeados que não estejam montados em nenhum container ativo. Faça backup antes se houver dados importantes.
+</Aside>
+
+---
+
+## Docker Compose
+
+O Compose gerencia aplicações multi-container definidas em `compose.yml` (ou `docker-compose.yml`).
+
+### `compose up` e `compose down`
+
+```bash
+# sobe todos os serviços definidos no compose.yml
+docker compose up
+
+# em background
+docker compose up -d
+
+# rebuild das imagens antes de subir
+docker compose up -d --build
+
+# sobe apenas serviços específicos
+docker compose up -d api banco
+
+# para e remove containers, redes e volumes criados pelo compose
+docker compose down
+
+# inclui remoção dos volumes nomeados
+docker compose down -v
+```
+
+---
+
+### Outros comandos Compose
+
+```bash
+# ver status dos serviços
+docker compose ps
+
+# ver logs de todos os serviços
+docker compose logs -f
+
+# logs de um serviço específico
+docker compose logs -f api
+
+# executar comando em um serviço
+docker compose exec api bash
+
+# escalar um serviço (múltiplas réplicas)
+docker compose up -d --scale worker=3
+
+# restartar apenas um serviço sem derrubar os outros
+docker compose restart api
+```
+
+---
+
+## Referências
+
+- [Referência CLI — docker run](https://docs.docker.com/engine/reference/commandline/run/)
+- [Referência CLI — Docker Compose](https://docs.docker.com/compose/reference/)
+- [docker system prune](https://docs.docker.com/engine/reference/commandline/system_prune/)

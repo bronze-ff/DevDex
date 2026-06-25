@@ -1,0 +1,192 @@
+---
+title: Rotinas & automação
+description: Tarefas agendadas, cron jobs com o Claude Code, e quando usar cada modo — Chat, Cowork e Code.
+sidebar:
+  order: 7
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+
+O Claude Code vai além de responder prompts: você pode criar **rotinas autônomas** que rodam sem intervenção, e escolher o **modo certo** para cada tipo de trabalho.
+
+---
+
+## Modos de operação
+
+O Claude Code oferece três superfícies distintas. Entender quando usar cada uma evita tanto subutilizá-lo quanto desperdiçar tokens.
+
+<Tabs>
+<TabItem label="Chat">
+
+**Quando usar:** exploração, perguntas rápidas, brainstorming, revisão pontual de código.
+
+- Sessão efêmera — sem acesso ao repositório local por padrão
+- Ideal para entender um conceito, comparar abordagens ou rascunhar uma ideia
+- Custo baixo; troca de contexto rápida
+
+```bash
+# Não exige projeto aberto; resposta imediata
+claude "Explique a diferença entre Promise.all e Promise.allSettled"
+```
+
+</TabItem>
+<TabItem label="Cowork">
+
+**Quando usar:** pares de trabalho em tempo real — você edita, o Claude acompanha e sugere.
+
+- **Cowork é um modo** da interface do Claude (ao lado de Chat e Code) — você alterna para ele pela própria interface, não por uma flag de CLI
+- O agente observa o contexto ativo e oferece sugestões contextuais
+- Bom para refatoração progressiva, pair-review de PRs e debugging interativo
+- Veja a página dedicada: [Cowork](/claude-code/cowork/)
+
+<Aside type="tip">
+No modo Cowork, mantenha o `CLAUDE.md` atualizado com as convenções do projeto — ele é injetado em cada sessão e reduz o tempo gasto realinhando o agente.
+</Aside>
+
+</TabItem>
+<TabItem label="Code (CLI)">
+
+**Quando usar:** tarefas autônomas, automações, scripts de longa duração, agentes.
+
+- Acesso completo ao sistema de arquivos, shell e MCPs configurados
+- Suporta `--dangerously-skip-permissions` para pipelines não-interativos (use com cautela)
+- É o modo padrão do terminal: `claude "<prompt>"` ou `claude` (interativo)
+
+```bash
+# Tarefa autônoma: gerar changelog a partir dos commits
+claude "Leia os últimos 20 commits com git log e gere um CHANGELOG.md resumindo as mudanças por categoria (feat/fix/chore)"
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Rotinas agendadas
+
+Uma **rotina** é uma automação que roda periodicamente sem você estar na frente do computador. A receita básica é: **gatilho + comando Claude + destino do resultado**.
+
+<Aside type="caution">
+Rotinas que precisam rodar 24/7 dependem de um processo sempre ativo. Em um laptop pessoal isso não é confiável — considere mover para um servidor VPS ou contêiner Docker quando a continuidade importar.
+</Aside>
+
+### Anatomia de uma rotina
+
+<Steps>
+
+1. **Defina o gatilho** — cron no Linux/macOS, Agendador de Tarefas no Windows, ou um loop em shell.
+
+2. **Escreva o prompt como arquivo** — salve em `.claude/rotinas/nome-da-rotina.md` para versionar e reusar.
+
+3. **Execute via CLI** passando o prompt e redirecionando a saída.
+
+4. **Registre o resultado** — grave em arquivo, envie para um webhook, ou faça commit no repositório.
+
+</Steps>
+
+### Exemplo: resumo diário de commits
+
+O exemplo abaixo roda todo dia às 8h, lê os commits do dia anterior e grava um resumo em Markdown.
+
+<Tabs>
+<TabItem label="cron (Linux/macOS)">
+
+```bash
+# Adicionar ao crontab: crontab -e
+0 8 * * * cd /caminho/do/projeto && claude \
+  "Liste os commits de ontem com git log --since='yesterday' --until='today' \
+   e gere um resumo em /tmp/daily-summary.md separado por autor" \
+  >> ~/.claude/logs/rotinas.log 2>&1
+```
+
+</TabItem>
+<TabItem label="PowerShell (Windows)">
+
+```powershell
+# Salvar como C:\scripts\daily-summary.ps1
+Set-Location C:\projetos\meu-projeto
+claude "Liste os commits de ontem com git log --since='yesterday' e gere um resumo em C:\logs\daily-summary.md"
+
+# Agendar com Task Scheduler:
+# schtasks /create /tn "ClaudeDailySummary" /tr "powershell -File C:\scripts\daily-summary.ps1" /sc daily /st 08:00
+```
+
+</TabItem>
+<TabItem label="Shell script reutilizável">
+
+```bash
+#!/usr/bin/env bash
+# .claude/rotinas/daily-summary.sh
+set -euo pipefail
+
+PROJETO="${1:-.}"
+SAIDA="${2:-/tmp/summary-$(date +%F).md}"
+
+cd "$PROJETO"
+claude "$(cat .claude/rotinas/prompts/daily-summary.md)" > "$SAIDA"
+echo "[$(date)] Resumo gerado em $SAIDA"
+```
+
+</TabItem>
+</Tabs>
+
+### Exemplo: sincronização entre agentes
+
+Quando dois agentes precisam compartilhar estado (ex.: um agente local e um remoto), um cron simples mantém ambos alinhados via repositório Git:
+
+```bash
+# A cada 30 minutos: puxa mudanças remotas e envia o estado local
+*/30 * * * * cd /repo-compartilhado && git pull --rebase && git push
+```
+
+O repositório atua como memória compartilhada — cada agente lê o estado mais recente antes de agir e grava o resultado ao terminar.
+
+---
+
+## Construindo automações robustas
+
+<CardGrid>
+<Card title="Planeje antes de automatizar" icon="pencil">
+Desenhe o fluxo em linguagem natural antes de escrever código ou prompt. Skills como `brainstorming` e `writing-plans` ajudam a validar a abordagem antes de executar.
+</Card>
+<Card title="Leve o contexto certo" icon="document">
+Coloque a documentação relevante no prompt, não apenas o pedido. Um prompt com contexto é mais confiável que um prompt genérico.
+</Card>
+<Card title="Guardrails de git" icon="warning">
+Automações não devem fazer `push --force`, `reset --hard` ou commit sem revisão explícita. Configure isso no `CLAUDE.md` do projeto.
+</Card>
+<Card title="Logs sempre" icon="list-format">
+Redirecione a saída para um arquivo de log com timestamp. Quando a rotina falhar às 3h da manhã, você vai agradecer.
+</Card>
+</CardGrid>
+
+---
+
+## Skills como blocos de automação
+
+Skills são prompts reutilizáveis que o Claude executa sob demanda — funcionam como funções nomeadas para seu fluxo de trabalho.
+
+<Steps>
+
+1. **Crie ou instale** uma skill. Há três formas:
+
+   - **Método principal — pasta `SKILL.md`**: crie uma pasta com `SKILL.md` dentro de `.claude/skills/` (escopo de projeto) ou `~/.claude/skills/` (escopo de usuário). Veja o guia completo em [Criar Skills](/claude-code/criar-skills/).
+   - **Plugins do marketplace**: use `/plugin marketplace add ...` ou `/plugin install ...` para instalar skills publicadas.
+   - **Instalador da comunidade** (quando disponível): `npx skills add <fonte>` — ex.: `npx skills add supabase/agent-skills`.
+
+2. **Acione pelo nome** no prompt: `/nome-da-skill` dispara a skill correspondente.
+
+3. **Combine** skills em sequência para criar pipelines mais complexos sem repetir instruções longas.
+
+</Steps>
+
+<Aside type="tip">
+Skills de escopo de **projeto** (`.claude/skills/`) são versionadas junto com o código e ficam disponíveis para todos no time. Skills de escopo de **usuário** (`~/.claude/skills/`) são pessoais e portáteis entre projetos.
+</Aside>
+
+---
+
+## Referências
+
+- [Documentação oficial do Claude Code — CLI](https://docs.anthropic.com/pt/docs/claude-code/cli-usage)
+- [Documentação oficial — Settings e CLAUDE.md](https://docs.anthropic.com/pt/docs/claude-code/settings)

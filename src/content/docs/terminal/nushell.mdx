@@ -5,18 +5,36 @@ sidebar:
   order: 1
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Pré-requisitos
+
+- **Windows 11** (ou Windows 10 atualizado)
+- **winget** disponível — presente por padrão no Windows 11; no Windows 10 instale o [App Installer](https://apps.microsoft.com/detail/9nblggh4nns1) pela Microsoft Store.
+- **Windows Terminal** instalado:
+
+```powershell
+winget install Microsoft.WindowsTerminal
+```
+
+<Aside type="tip">
+Se o Windows Terminal já estiver instalado, o comando acima não faz nada de errado — o winget simplesmente informa que a versão já está presente.
+</Aside>
+
+---
+
+## Instalação
 
 <Steps>
 
 1. **Instalar os pacotes principais**
 
-   Execute no **PowerShell** ou **CMD** via Winget:
+   Execute no **PowerShell** ou **CMD** via winget:
 
    ```powershell
    winget install nushell       # Shell
    winget install starship      # Prompt visual
-   winget install zoxide        # Navegação inteligente (substituto do cd)
+   winget install ajeetdsouza.zoxide  # Navegação inteligente (substituto do cd)
    ```
 
 2. **Instalar a Nerd Font**
@@ -40,21 +58,25 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
    Abra uma aba do **Nushell** e execute:
 
-   ```nu
+   ```bash
    starship init nu | save -f ~/.starship.nu
    zoxide init nushell | save -f ~/.zoxide.nu
    ```
+
+   O flag `-f` sobrescreve o arquivo caso já exista. Sem ele, o Nushell recusa salvar em arquivo existente.
 
 5. **Editar `config.nu`**
 
    Abra o arquivo de configuração:
 
-   ```nu
+   ```bash
    notepad $nu.config-path
    ```
 
    No final do arquivo, adicione:
 
+   <Tabs>
+   <TabItem label="Via source (recomendado)">
    ```nu
    # --- Configurações Pessoais ---
    $env.config.show_banner = false
@@ -62,31 +84,111 @@ import { Steps, Aside } from '@astrojs/starlight/components';
    source ~/.starship.nu
    # source ~/.carapace.nu   # descomente após instalar o carapace (ver Extras)
    ```
+   </TabItem>
+   <TabItem label="Starship inline (alternativo)">
+   ```nu
+   # --- Configurações Pessoais ---
+   $env.config.show_banner = false
+   source ~/.zoxide.nu
+   # Starship inline — cole a saída de `starship init nu` diretamente aqui
+   # em vez de usar source ~/.starship.nu; ambas as formas são válidas.
+   ```
+   </TabItem>
+   </Tabs>
 
    Salve e reinicie o terminal.
 
 </Steps>
 
-## Extras (opcional)
+---
 
-Ferramentas úteis para enriquecer o ambiente, todas via Winget:
+## Verificar a instalação
+
+Abra uma nova aba do Nushell e confirme a versão:
+
+```bash
+nu --version
+# Exemplo de saída: 0.102.0
+```
+
+Se tudo estiver correto, o prompt deve exibir ícones coloridos (Git branch, diretório, etc.). Um prompt sem ícones indica problema com a fonte — veja o Troubleshooting abaixo.
+
+---
+
+## Zoxide
+
+O zoxide aprende os diretórios que você mais visita e permite navegar com `z` em vez de `cd`.
+
+**Instalar e configurar:**
 
 ```powershell
-winget install bat      # cat com cores
-winget install ripgrep  # busca muito rápida (grep melhorado)
-winget install fzf      # fuzzy finder
-winget install lazygit  # interface de Git no terminal
-winget install carapace # autocompletes para CLIs
+winget install ajeetdsouza.zoxide
+```
+
+```bash
+zoxide init nushell | save -f ~/.zoxide.nu
+```
+
+No `config.nu`, adicione `source ~/.zoxide.nu` (já coberto no passo 5 acima).
+
+**Uso básico:**
+
+```bash
+z projetos        # salta para o diretório "projetos" mais visitado
+z doc nu          # filtra por múltiplos termos
+zi                # abre o seletor interativo (requer fzf)
+```
+
+---
+
+## Extras (opcional)
+
+Ferramentas úteis para enriquecer o ambiente, todas via winget:
+
+```powershell
+winget install sharkdp.bat      # cat com cores e números de linha
+winget install BurntSushi.ripgrep.MSVC  # busca muito rápida (grep melhorado)
+winget install junegunn.fzf     # fuzzy finder (necessário para `zi` do zoxide)
+winget install jesseduffield.lazygit    # interface de Git no terminal
+winget install rsteube.carapace # autocompletes para CLIs
 ```
 
 ### Ativar Carapace
 
 Após instalar o carapace, gere o arquivo de inicialização:
 
-```nu
+```bash
 carapace _carapace nushell | save -f ~/.carapace.nu
 ```
 
 <Aside type="note">
 Depois descomente a linha `source ~/.carapace.nu` no seu `config.nu` e reinicie o terminal para ativar os autocompletes.
 </Aside>
+
+---
+
+## Troubleshooting
+
+### Prompt sem ícones (quadrados ou pontos de interrogação)
+
+A fonte configurada no Windows Terminal não é uma Nerd Font. Verifique:
+
+1. A fonte **CaskaydiaCove NF** (ou outra Nerd Font) está instalada no sistema?
+2. Nas configurações do Windows Terminal (**Perfis > Nushell > Aparência**), a fonte selecionada é exatamente **CaskaydiaCove NF** (e não "Cascadia Code" sem o sufixo NF)?
+3. Reinicie o Windows Terminal após salvar a fonte.
+
+### Erro ao executar `save` sem `-f`
+
+O Nushell recusa sobrescrever arquivos existentes por padrão. Use sempre o flag `-f`:
+
+```bash
+starship init nu | save -f ~/.starship.nu
+zoxide init nushell | save -f ~/.zoxide.nu
+```
+
+### Starship não renderiza / prompt não muda
+
+- Confirme que `source ~/.starship.nu` (ou o bloco inline equivalente) está no **final** do `config.nu`.
+- Verifique o caminho do arquivo: `ls ~/.starship.nu` — se não existir, rode `starship init nu | save -f ~/.starship.nu` novamente.
+- O Starship precisa que sua versão seja compatível com Nushell. Atualize com `winget upgrade starship`.
+- Lembre-se: tanto `source ~/.starship.nu` quanto colar o init inline no `config.nu` são abordagens válidas; qualquer uma das duas funciona.

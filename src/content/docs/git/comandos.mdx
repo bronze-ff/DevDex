@@ -1,9 +1,11 @@
 ---
 title: Comandos Git
-description: Referência rápida dos comandos Git mais usados.
+description: Referência rápida dos comandos Git mais usados — com a sintaxe moderna (switch/restore) e clássica (checkout).
 sidebar:
   order: 2
 ---
+
+import { Tabs, TabItem, Aside, Steps } from '@astrojs/starlight/components';
 
 ## Básico
 
@@ -12,6 +14,7 @@ git init                    # inicializa repositório
 git clone <url>             # clona repositório
 git status                  # estado atual
 git add <arquivo>           # adiciona ao stage
+git add .                   # adiciona tudo
 git commit -m "mensagem"    # commita
 git push                    # envia para remote
 git pull                    # atualiza do remote
@@ -19,20 +22,119 @@ git pull                    # atualiza do remote
 
 ## Branches
 
+<Tabs>
+  <TabItem label="Moderno (recomendado)">
+
+`git switch` foi introduzido no Git 2.23 para substituir o papel de navegação do `git checkout`. É mais legível e com menos ambiguidade.
+
 ```bash
-git branch                  # lista branches
+git branch                  # lista branches locais
 git branch <nome>           # cria branch
+git switch <branch>         # muda para branch existente
+git switch -c <branch>      # cria e muda (-c = --create)
+git merge <branch>          # merge na branch atual
+git branch -d <branch>      # deleta branch (safe)
+git branch -D <branch>      # deleta forçado (não merged)
+```
+
+  </TabItem>
+  <TabItem label="Legado (checkout)">
+
+`git checkout` ainda funciona e você vai encontrá-lo em scripts e docs antigas. Prefira `switch` em uso interativo.
+
+```bash
 git checkout <branch>       # muda de branch
 git checkout -b <branch>    # cria e muda
-git merge <branch>          # merge
-git branch -d <branch>      # deleta branch
 ```
+
+  </TabItem>
+</Tabs>
+
+## Desfazendo mudanças
+
+<Tabs>
+  <TabItem label="Moderno (recomendado)">
+
+`git restore` foi introduzido junto com `git switch` (Git 2.23) para separar as responsabilidades de `checkout`.
+
+```bash
+git restore <arquivo>           # descarta mudanças no working tree
+git restore --staged <arquivo>  # remove do stage (mantém no working tree)
+git restore --source=HEAD~1 <arquivo>  # restaura arquivo de commit anterior
+```
+
+  </TabItem>
+  <TabItem label="Legado (checkout/reset)">
+
+```bash
+git checkout -- <arquivo>       # descarta mudanças (working tree)
+git reset HEAD <arquivo>        # remove do stage
+```
+
+  </TabItem>
+</Tabs>
 
 ## Histórico e diff
 
 ```bash
 git log --oneline           # histórico resumido
+git log --oneline --graph   # histórico com grafo de branches
 git diff                    # mudanças não staged
 git diff --staged           # mudanças staged
 git show <hash>             # detalhes de um commit
 ```
+
+## Reflog — recuperação de commits perdidos
+
+O `reflog` registra todos os movimentos do `HEAD`, mesmo os que não aparecem no `git log`. É sua rede de segurança quando um `reset --hard` ou `rebase` deu errado.
+
+```bash
+git reflog                      # lista todos os movimentos do HEAD
+git reflog --oneline            # versão resumida
+git checkout <hash>             # inspeciona o estado naquele ponto
+git switch -c recovery/<nome> <hash>  # cria branch de recuperação
+git reset --hard <hash>         # volta para aquele ponto (cuidado!)
+```
+
+<Aside type="tip">
+O reflog fica salvo localmente por 90 dias por padrão. Não é enviado no push — é exclusivo da sua máquina.
+</Aside>
+
+## Cherry-pick
+
+Aplica o patch de um commit específico na branch atual, sem trazer o histórico inteiro.
+
+```bash
+git cherry-pick <hash>          # aplica um commit
+git cherry-pick <hash1> <hash2> # aplica múltiplos (em ordem)
+git cherry-pick <h1>..<h2>      # aplica um intervalo (exclusivo..inclusivo)
+git cherry-pick --no-commit <hash>  # aplica mas não commita ainda
+git cherry-pick --abort         # cancela cherry-pick em andamento
+```
+
+<Aside type="caution">
+Cherry-pick cria um **novo commit** com hash diferente. Se o commit original existir em outra branch que será mergeada depois, pode causar conflito duplicado. Use com consciência em branches compartilhadas.
+</Aside>
+
+## Rebase interativo
+
+`git rebase -i` abre um editor onde você reordena, edita, squash ou remove commits antes de publicá-los — ótimo para limpar histórico local antes de um PR.
+
+```bash
+git rebase -i HEAD~3        # edita os últimos 3 commits
+git rebase -i <hash>        # edita a partir de um commit (exclusive)
+```
+
+No editor, as ações mais comuns por linha de commit:
+
+| Ação | Efeito |
+|------|--------|
+| `pick` | mantém o commit como está |
+| `reword` | mantém, mas edita a mensagem |
+| `squash` | junta com o commit anterior (mantém msgs) |
+| `fixup` | junta com o anterior (descarta esta msg) |
+| `drop` | remove o commit |
+
+<Aside type="caution">
+Rebase reescreve o histórico — nunca faça rebase interativo de commits já publicados em uma branch compartilhada sem combinar com a equipe.
+</Aside>
