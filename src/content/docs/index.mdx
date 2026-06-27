@@ -4,7 +4,7 @@ description: Base pessoal de conhecimento técnico para desenvolvedores.
 template: splash
 hero:
   title: DevDex
-  tagline: Sua base pessoal de conhecimento técnico — comandos, dicas e melhores práticas num só lugar.
+  tagline: Sua base pessoal de conhecimento técnico. Comandos, dicas e melhores práticas num só lugar.
   actions:
     - text: 🖥️ Comece pela Máquina Nova
       link: /setup/
@@ -15,6 +15,7 @@ hero:
       variant: minimal
 ---
 
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 import TermPlay from '../../components/TermPlay.astro';
 
 ## O que é o DevDex?
@@ -23,12 +24,14 @@ Um índice pessoal de referências técnicas organizado por tecnologia. Consulte
 
 <TermPlay preset="setup" title="máquina nova" />
 
-| Seção | Conteúdo |
-|---|---|
-| [🖥️ Máquina Nova](/setup/) | Bootstrap pós-formatação: runtimes, Git/SSH, Claude Code, VS Code |
-| [⌨️ Terminal](/terminal/) | Nushell, Starship e Zoxide no Windows |
-| [🤖 Claude Code](/claude-code/) | Comandos, MCP, cowork, loops, skills |
-| [🧠 Agentes & Loops](/agentes/) | Loop engineering, agentes autônomos, Hermes Agent |
-| [🌿 Git](/git/) | Comandos essenciais e fluxos de trabalho |
-| [🐳 Docker](/docker/) | Imagens, containers e compose |
-| [🔖 Sites Salvos](/sites/) | Links e ferramentas úteis |
+## Navegue por seção
+
+<CardGrid>
+  <LinkCard title="🖥️ Máquina Nova" href="/setup/" description="Bootstrap pós-formatação: runtimes, Git/SSH, Claude Code, VS Code." />
+  <LinkCard title="⌨️ Terminal" href="/terminal/" description="Nushell, Starship e Zoxide no Windows." />
+  <LinkCard title="🤖 Claude Code" href="/claude-code/" description="Comandos, MCP, cowork, loops e skills." />
+  <LinkCard title="🧠 Agentes & Loops" href="/agentes/" description="Loop engineering, agentes autônomos e Hermes Agent." />
+  <LinkCard title="🌿 Git" href="/git/" description="Comandos essenciais e fluxos de trabalho." />
+  <LinkCard title="🐳 Docker" href="/docker/" description="Imagens, containers e compose." />
+  <LinkCard title="🔖 Sites Salvos" href="/sites/" description="Links e ferramentas úteis." />
+</CardGrid>
