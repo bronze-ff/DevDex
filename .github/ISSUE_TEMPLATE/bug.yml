@@ -1,0 +1,25 @@
+name: Bug
+description: Algo no site ou no repositório quebrou
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu
+      description: O que você viu, em qual página.
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que deveria acontecer
+    validations:
+      required: true
+  - type: textarea
+    id: como
+    attributes:
+      label: Como reproduzir
+      description: Passos. Se for erro de browser, cole o event id do Sentry se tiver.
+    validations:
+      required: true

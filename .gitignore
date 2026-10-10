@@ -12,10 +12,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
 # environment variables
 .env
-.env.production
+.env.*
+!.env.example
+
+# local agent/tool config
+.mcp.json
+
+# python
+__pycache__/
+*.pyc
 
 # macOS-specific files
 .DS_Store
