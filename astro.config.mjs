@@ -6,10 +6,11 @@ import { unified } from '@astrojs/markdown-remark';
 export default defineConfig({
   site: 'https://dev-dex-one.vercel.app',
   markdown: {
-    processor: unified(),
-    rehypePlugins: [
-      [rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] }],
-    ],
+    processor: unified({
+      rehypePlugins: [
+        [rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] }],
+      ],
+    }),
   },
   integrations: [
     starlight({
