@@ -21,7 +21,7 @@ Antes de abrir um PR:
 npm run verify
 ```
 
-`verify` roda o typecheck (`astro check`) e o build de produção. Não há suíte de testes.
+`verify` roda o typecheck (`astro check`), o teste do scrub de privacidade e o build de produção. Não há ESLint.
 
 ## Como publicar
 

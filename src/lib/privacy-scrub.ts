@@ -22,7 +22,8 @@ export function scrubText(value: string): string {
 export function scrubValue(value: unknown, depth = 0, seen = new WeakSet<object>()): unknown {
 	if (typeof value === 'string') return scrubText(value);
 	if (value == null || typeof value !== 'object') return value;
-	if (depth >= MAX_DEPTH || seen.has(value)) return value;
+	if (depth >= MAX_DEPTH) return '[Truncated]';
+	if (seen.has(value)) return '[Circular]';
 	seen.add(value);
 
 	if (Array.isArray(value)) {

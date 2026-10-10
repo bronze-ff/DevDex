@@ -6,7 +6,7 @@ Regras para Codex, Cursor e outros agentes neste repositório. O `CLAUDE.md` só
 
 DevDex é um site estático público (Astro + Starlight) na raiz do repositório. O deploy é a Vercel, no projeto que publica `https://dev-dex-one.vercel.app`. Não há API, banco nem login.
 
-Antes de abrir ou atualizar um PR, rode `npm run verify` (typecheck + build de produção) e deixe verde. O mesmo comando é o job `fast` da CI.
+Antes de abrir ou atualizar um PR, rode `npm run verify` (typecheck, teste do scrub e build de produção) e deixe verde. O mesmo comando é o job `fast` da CI.
 
 Issues ficam no GitHub Issues deste repositório (`bronze-ff/DevDex`). Não use Linear nem IDs `FIL-xxx`. No corpo do PR, `Fixes #n` fecha a issue no merge.
 
@@ -25,7 +25,7 @@ npm run build
 npm run preview
 ```
 
-Não há ESLint nem suíte de testes. `verify` é typecheck e build. Não invente um runner só para o PR passar.
+Não há ESLint. `verify` é typecheck, o teste do scrub (`node --test` em `src/lib/privacy-scrub.test.ts`) e build. Não invente outro runner.
 
 ## Estrutura e onde mexer
 

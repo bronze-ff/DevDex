@@ -11,7 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "verify": "astro check && astro build",
+    "verify": "astro check && node --experimental-strip-types --test src/lib/privacy-scrub.test.ts && astro build",
     "astro": "astro"
   },
   "dependencies": {
