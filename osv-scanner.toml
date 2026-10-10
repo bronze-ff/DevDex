@@ -1,0 +1,7 @@
+# postcss-selector-parser 6.x via postcss-nested 6 (dependência do Starlight).
+# A correção publicada é a linha 7 (GHSA-rj75-hqrm-r3gf), incompatível com o range ^6.
+# É ferramenta de build, não código servido ao visitante. Rever quando o Starlight subir o parser.
+[[IgnoredVulns]]
+id = "GHSA-rj75-hqrm-r3gf"
+ignoreUntil = 2027-01-10
+reason = "Build-time no Starlight. Major 7 quebra postcss-nested 6.2.0. Sem dado de visitante."

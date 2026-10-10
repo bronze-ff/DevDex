@@ -1,0 +1,17 @@
+name: Feature
+description: Página, seção ou ajuste novo
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: pedido
+    attributes:
+      label: O que você quer
+    validations:
+      required: true
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Como saber que ficou pronto
+    validations:
+      required: true

@@ -2,9 +2,40 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import rehypeExternalLinks from 'rehype-external-links';
 import { unified } from '@astrojs/markdown-remark';
+import sentry from '@sentry/astro';
+import { loadEnv } from 'vite';
+
+const fileEnv = loadEnv(
+  process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  process.cwd(),
+  '',
+);
+const env = (name) => process.env[name] || fileEnv[name] || '';
+
+const sentryAuthToken = env('SENTRY_AUTH_TOKEN');
+const sentryOrg = env('SENTRY_ORG');
+const sentryProject = env('SENTRY_PROJECT') || 'devdex';
+const uploadSourceMaps = Boolean(sentryAuthToken && sentryOrg);
+const vercelEnv = env('VERCEL_ENV');
+const appEnvironment =
+  vercelEnv === 'production' || vercelEnv === 'preview' || vercelEnv === 'development'
+    ? vercelEnv
+    : process.env.NODE_ENV === 'production'
+      ? 'production'
+      : 'development';
+const sentryEnvironment =
+  appEnvironment === 'production' ? 'producao' : appEnvironment === 'preview' ? 'homologacao' : 'dev';
+const release = env('VERCEL_GIT_COMMIT_SHA') || env('GITHUB_SHA');
 
 export default defineConfig({
   site: 'https://dev-dex-one.vercel.app',
+  vite: {
+    define: {
+      __DEVDEX_ENVIRONMENT__: JSON.stringify(appEnvironment),
+      __DEVDEX_SENTRY_ENVIRONMENT__: JSON.stringify(sentryEnvironment),
+      __DEVDEX_RELEASE__: JSON.stringify(release),
+    },
+  },
   markdown: {
     processor: unified({
       rehypePlugins: [
@@ -13,6 +44,28 @@ export default defineConfig({
     }),
   },
   integrations: [
+    sentry({
+      enabled: Boolean(env('PUBLIC_SENTRY_DSN')),
+      telemetry: false,
+      ...(uploadSourceMaps
+        ? { org: sentryOrg, project: sentryProject, authToken: sentryAuthToken }
+        : {
+            errorHandler(error) {
+              console.warn(`[sentry] source maps não enviados: ${error.message}`);
+            },
+          }),
+      sourcemaps: {
+        disable: !uploadSourceMaps,
+        ...(uploadSourceMaps ? { filesToDeleteAfterUpload: ['./dist/**/*.map'] } : {}),
+      },
+      release: {
+        create: uploadSourceMaps,
+        finalize: uploadSourceMaps,
+        setCommits: uploadSourceMaps ? { auto: true } : false,
+        inject: Boolean(release),
+        ...(release ? { name: release } : {}),
+      },
+    }),
     starlight({
       title: 'DevDex',
       description: 'Base pessoal de conhecimento técnico',
@@ -25,6 +78,7 @@ export default defineConfig({
       ],
       components: {
         PageTitle: './src/components/PageTitle.astro',
+        Head: './src/components/Head.astro',
       },
       pagefind: true,
       editLink: { baseUrl: 'https://github.com/bronze-ff/DevDex/edit/master/' },
