@@ -1,0 +1,49 @@
+name: risk
+
+# Separado do ci.yml para reavaliar a label `aprovado-filippe` quando ela entra
+# ou sai do PR (`labeled`/`unlabeled`). No ci.yml esses eventos cancelariam o
+# run de fast/security em andamento por causa do `concurrency` compartilhado.
+# Labels gravadas pelo próprio job usam o GITHUB_TOKEN e não disparam novo run.
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+concurrency:
+  group: risk-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  risk:
+    name: risk
+    if: github.event_name == 'pull_request' && vars.AUTO_MERGE == 'true'
+    runs-on: ubuntu-slim
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: classificar e ligar auto-merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          files=$(git diff --name-only "$BASE" "$HEAD")
+          lines=$(git diff --shortstat "$BASE" "$HEAD" | awk '{print $4+$6}')
+          high='(^|/)(auth|middleware|migrations|supabase)/|\.sql$|^\.github/|(^|/)\.env|vercel\.json|electron-builder|(^|/)prompts?/'
+          if echo "$files" | grep -Eq "$high" || [ "${lines:-0}" -gt 400 ]; then RISK=alto; else RISK=baixo; fi
+          gh pr edit "$PR" --repo "$GITHUB_REPOSITORY" --remove-label risco:baixo,risco:alto >/dev/null 2>&1 || true
+          gh pr edit "$PR" --repo "$GITHUB_REPOSITORY" --add-label "risco:$RISK"
+          if [ "$RISK" = baixo ]; then gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --auto --squash
+          elif ! echo "$LABELS" | grep -q aprovado-filippe; then
+            echo "::error::Risco alto: precisa da label aprovado-filippe"; exit 1; fi

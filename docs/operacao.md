@@ -49,7 +49,7 @@ Não há log de aplicação. Build e 404 da plataforma ficam na Vercel. Erro de 
 
 ## CI
 
-`.github/workflows/ci.yml` roda em PR e no push do `master`. Um job `fast`: gitleaks só no intervalo de commits do PR ou do push, `npm ci` com cache, `npm run verify`. Osv-scanner só se o lockfile mudou. Zizmor só se `.github/` mudou. Concurrency cancela o run antigo do mesmo PR e não cancela o push do `master`.
+`.github/workflows/ci.yml` roda em PR e no push do `master`. Um job `fast`: gitleaks só no intervalo de commits do PR ou do push, `npm ci` com cache, `npm run verify`. Osv-scanner só se o lockfile mudou. Zizmor só se `.github/` mudou. Concurrency cancela o run antigo do mesmo PR e não cancela o push do `master`. O job `risk` fica em `.github/workflows/risk.yml`, separado, e também roda quando uma label entra ou sai do PR, para reavaliar `aprovado-filippe` sem cancelar o run do `ci.yml`.
 
 O job `risk` (label e auto-merge) só existe se a variável de repositório `AUTO_MERGE` for `true`. Ela não está definida. Este PR não liga auto-merge.
 
